@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - 2-actions
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_ROOT_USER: root
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: github-actions
+          MYSQL_HOST: 127.0.0.1
+        ports:
+          - 3306:3306
+
+    env:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: github-actions
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: 3306
+      DJANGO_PORT: 8000
+      DJANGO_PORT_EXTERNAL: 8001
+      DJANGO_DEBUG_MODE: 1
+      DJANGO_SECRET_KEY: 69tgugtg%^fgJO&*&
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install requirements
+        run: pip install -r requirements.txt
+      - name: Check Syntax
+        run: pycodestyle --statistics --max-line-length=120 portfolio-backend
+      - name: Run Migrations
+        run: python manage.py migrate
+      - name: Run Test
+        run: python manage.py test
