@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+
+  mysql:
+    container_name: mysql
+    image: mysql:latest
+    env_file:
+      .env
+    ports:
+      - "${MYSQL_PORT}:${MYSQL_PORT}"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+
+  django:
+    container_name: django
+    build: .
+    command: python manage.py runserver 0.0.0.0:${DJANGO_PORT}
+    env_file:
+      - .env
+    ports:
+      - "${DJANGO_PORT_EXTERNAL}:${DJANGO_PORT}"
+    volumes:
+      - .:/usr/src/app/
+    depends_on:
+      - mysql
