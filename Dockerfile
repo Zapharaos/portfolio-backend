@@ -15,5 +15,6 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt --no-cache-dir
 
 # Run the command to start the Django development server
+RUN chmod +x /usr/src/app/wait-for-it.sh
 RUN chmod +x /usr/src/app/entrypoint.sh
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
