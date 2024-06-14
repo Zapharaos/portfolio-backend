@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Portfolio, Social, List, ListItem, DefaultUser, Theme
+from .models import User, Social, List, ListItem, Theme
 
 
 class SocialSerializer(serializers.ModelSerializer):
@@ -25,23 +25,16 @@ class ListSerializer(serializers.ModelSerializer):
 class ThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Theme
-        fields = ['name', 'background', 'color']
+        fields = ['name', 'todo']
 
 
 class UserSerializer(serializers.ModelSerializer):
     socials = SocialSerializer(many=True, source='social_set')
     lists = ListSerializer(many=True, source='list_set')
-
-    class Meta:
-        model = User
-        fields = ['id', 'hero', 'logo', 'description', 'photo', 'curriculum', 'socials', 'lists']
-
-
-class PortfolioSerializer(serializers.ModelSerializer):
-    user = UserSerializer(source='idUser')
     theme_light = ThemeSerializer()
     theme_dark = ThemeSerializer()
 
     class Meta:
-        model = Portfolio
-        fields = ['id', 'user', 'theme_light', 'theme_dark']
+        model = User
+        fields = ['id', 'hero', 'description', 'email', 'logo', 'photo', 'curriculum',
+                  'socials', 'lists', 'theme_light', 'theme_dark']

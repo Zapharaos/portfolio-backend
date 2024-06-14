@@ -16,10 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from profiles.views import DefaultPortfolioView
+from user.views import SingletonUserView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('portfolio/default/', DefaultPortfolioView.as_view(), name='default-portfolio'),
+    path('user/', SingletonUserView.as_view(), name='singleton-user'),
 ]
