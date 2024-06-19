@@ -16,7 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from user.views import SingletonUserView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('user/', SingletonUserView.as_view(), name='singleton-user'),
 ]
