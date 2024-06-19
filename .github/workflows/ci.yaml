@@ -32,6 +32,12 @@ jobs:
         run: flake8
 
       - name: Run tests with coverage
+        env:
+          DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
+          DJANGO_DEBUG_MODE: ${{ secrets.DJANGO_DEBUG_MODE }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
+          FRONTEND_PORT: ${{ secrets.FRONTEND_PORT }}
         run: coverage run manage.py test
 
       - name: Upload coverage reports to Codecov
