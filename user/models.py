@@ -32,8 +32,8 @@ class User(models.Model):
 
 class Social(models.Model):
     idUser = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    url = models.URLField()
+    name = models.CharField(max_length=255, unique=True)
+    url = models.URLField(unique=True)
     hidden = models.BooleanField(default=False)
 
     def __str__(self):
@@ -43,7 +43,7 @@ class Social(models.Model):
 class List(models.Model):
     idUser = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    index = models.IntegerField()
+    index = models.IntegerField(unique=True)
     hidden = models.BooleanField(default=False)
 
     def __str__(self):
@@ -52,7 +52,7 @@ class List(models.Model):
 
 class ListItem(models.Model):
     idList = models.ForeignKey(List, on_delete=models.CASCADE)
-    index = models.IntegerField()
+    index = models.IntegerField(unique=True)
     organisation = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     menuName = models.CharField(max_length=255, blank=True, null=True)
