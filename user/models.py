@@ -18,7 +18,8 @@ class User(models.Model):
     logo = models.FileField(upload_to='logos/')
     photo = models.FileField(upload_to='photos/', blank=True, null=True)
     curriculum = models.FileField(upload_to='curriculums/', blank=True, null=True)
-    theme_light = models.ForeignKey(Theme, on_delete=models.SET_NULL, blank=True, null=True, related_name='light_theme')
+    theme_light = models.ForeignKey(Theme, on_delete=models.SET_NULL, blank=True, null=True,
+                                    related_name='light_theme')
     theme_dark = models.ForeignKey(Theme, on_delete=models.SET_NULL, blank=True, null=True, related_name='dark_theme')
 
     def save(self, *args, **kwargs):

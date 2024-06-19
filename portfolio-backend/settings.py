@@ -140,4 +140,3 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:' + os.environ['FRONTEND_PORT'],
     'https://' + os.environ['DOMAIN_NAME'],
 ]
-

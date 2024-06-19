@@ -1,5 +1,5 @@
 from django.test import TestCase, RequestFactory
-from django.urls import reverse, path
+from django.urls import reverse
 from user.models import User
 from user.serializers import UserSerializer
 from user.views import SingletonUserView
