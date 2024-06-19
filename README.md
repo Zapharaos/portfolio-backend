@@ -1,5 +1,7 @@
 # portfolio-backend
 
+[![codecov](https://codecov.io/gh/Zapharaos/portfolio-backend/graph/badge.svg?token=6T49GCFCLY)](https://codecov.io/gh/Zapharaos/portfolio-backend)
+
 Repository related the backend of my own portfolio.
 
 Link : www.matthieu-freitag.com/
