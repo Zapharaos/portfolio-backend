@@ -1,19 +1,19 @@
 from rest_framework import serializers
-from .models import User, Social, List, ListItem, Theme, Footer, SVG
+from .models import User, Social, List, ListItem, Theme, About, Footer, Image
 
 
-class SVGSerializer(serializers.ModelSerializer):
+class ImageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SVG
+        model = Image
         fields = ['name', 'file']
 
 
 class SocialSerializer(serializers.ModelSerializer):
-    svg = SVGSerializer()
+    image = ImageSerializer()
 
     class Meta:
         model = Social
-        fields = ['index', 'name', 'pseudo', 'url', 'svg', 'hidden']
+        fields = ['index', 'name', 'pseudo', 'url', 'image', 'hidden']
 
 
 class ListItemSerializer(serializers.ModelSerializer):
@@ -36,6 +36,15 @@ class ThemeSerializer(serializers.ModelSerializer):
         fields = ['name', 'todo']
 
 
+class AboutSerializer(serializers.ModelSerializer):
+    image = ImageSerializer()
+    imageResponsive = ImageSerializer()
+
+    class Meta:
+        model = About
+        fields = ['image', 'imageResponsive', 'description']
+
+
 class FooterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Footer
@@ -43,6 +52,7 @@ class FooterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    about = AboutSerializer()
     footer = FooterSerializer()
 
     socials = SocialSerializer(many=True, source='social_set')
@@ -52,6 +62,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'location', 'locale', 'footer',
+        fields = ['id', 'name', 'email', 'location', 'locale', 'about', 'footer',
                   'hero', 'description', 'logo', 'photo', 'curriculum',
                   'socials', 'lists', 'theme_light', 'theme_dark']

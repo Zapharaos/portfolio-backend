@@ -2,9 +2,9 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
-class SVG(models.Model):
+class Image(models.Model):
     name = models.CharField(max_length=255)
-    file = models.FileField(upload_to='svg/')
+    file = models.FileField(upload_to='images/')
 
     def __str__(self):
         return self.name
@@ -17,6 +17,17 @@ class Theme(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class About(models.Model):
+    image = models.ForeignKey(Image, on_delete=models.CASCADE, related_name='image')
+    imageResponsive = models.ForeignKey(
+        Image, on_delete=models.CASCADE, related_name='imageResponsive', blank=True, null=True
+    )
+    description = models.CharField(max_length=1023)
+
+    def __str__(self):
+        return str(self.id)
 
 
 class Footer(models.Model):
@@ -36,6 +47,9 @@ class User(models.Model):
     email = models.EmailField(unique=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     locale = models.CharField(max_length=255, blank=True, null=True)
+    about = models.OneToOneField(
+        About, on_delete=models.CASCADE, blank=True, null=True
+    )
     footer = models.OneToOneField(
         Footer, on_delete=models.CASCADE, blank=True, null=True
     )
@@ -64,7 +78,7 @@ class Social(models.Model):
     name = models.CharField(max_length=255)
     pseudo = models.CharField(max_length=255, blank=True)
     url = models.URLField()
-    svg = models.ForeignKey(SVG, on_delete=models.CASCADE)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
     hidden = models.BooleanField(default=False)
 
     def __str__(self):
