@@ -19,6 +19,16 @@ class Theme(models.Model):
         return self.name
 
 
+class Hero(models.Model):
+    title = models.CharField(max_length=255)
+    tagline = models.CharField(max_length=255)
+    callToActionContent = models.CharField(max_length=255)
+    backgroundImage = models.ForeignKey(Image, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.id)
+
+
 class About(models.Model):
     image = models.ForeignKey(Image, on_delete=models.CASCADE, related_name='image')
     imageResponsive = models.ForeignKey(
@@ -47,21 +57,15 @@ class User(models.Model):
     email = models.EmailField(unique=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     locale = models.CharField(max_length=255, blank=True, null=True)
+    hero = models.OneToOneField(
+        Hero, on_delete=models.CASCADE
+    )
     about = models.OneToOneField(
-        About, on_delete=models.CASCADE, blank=True, null=True
+        About, on_delete=models.CASCADE
     )
     footer = models.OneToOneField(
-        Footer, on_delete=models.CASCADE, blank=True, null=True
+        Footer, on_delete=models.CASCADE
     )
-
-    hero = models.CharField(max_length=255)
-    description = models.CharField(max_length=1023)
-    logo = models.FileField(upload_to='logos/')
-    photo = models.FileField(upload_to='photos/', blank=True, null=True)
-    curriculum = models.FileField(upload_to='curriculums/', blank=True, null=True)
-    theme_light = models.ForeignKey(Theme, on_delete=models.SET_NULL, blank=True, null=True,
-                                    related_name='light_theme')
-    theme_dark = models.ForeignKey(Theme, on_delete=models.SET_NULL, blank=True, null=True, related_name='dark_theme')
 
     def save(self, *args, **kwargs):
         if not self.pk and User.objects.exists():
