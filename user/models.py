@@ -2,9 +2,9 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
-class Image(models.Model):
+class File(models.Model):
     name = models.CharField(max_length=255)
-    file = models.FileField(upload_to='images/')
+    file = models.FileField()
 
     def __str__(self):
         return self.name
@@ -23,7 +23,7 @@ class Project(models.Model):
     url = models.URLField(blank=True, null=True)
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=1023)
-    image = models.ForeignKey(Image, on_delete=models.CASCADE, blank=True, null=True)
+    image = models.ForeignKey(File, on_delete=models.CASCADE, blank=True, null=True)
     technologies = models.ManyToManyField(Technology, blank=True)
 
     def __str__(self):
@@ -80,7 +80,7 @@ class Hero(models.Model):
     title = models.CharField(max_length=255)
     tagline = models.CharField(max_length=255)
     callToActionContent = models.CharField(max_length=255)
-    backgroundImage = models.ForeignKey(Image, on_delete=models.CASCADE)
+    backgroundImage = models.ForeignKey(File, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.content_type
@@ -88,9 +88,9 @@ class Hero(models.Model):
 
 class About(models.Model):
     content_type = models.CharField(max_length=255, default='about')
-    image = models.ForeignKey(Image, on_delete=models.CASCADE, related_name='image')
+    image = models.ForeignKey(File, on_delete=models.CASCADE, related_name='image')
     imageResponsive = models.ForeignKey(
-        Image, on_delete=models.CASCADE, related_name='imageResponsive', blank=True, null=True
+        File, on_delete=models.CASCADE, related_name='imageResponsive', blank=True, null=True
     )
     description = models.CharField(max_length=1023)
 
@@ -116,6 +116,8 @@ class User(models.Model):
     email = models.EmailField(unique=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     locale = models.CharField(max_length=255, blank=True, null=True)
+    logo = models.ForeignKey(File, on_delete=models.CASCADE, related_name='logo')
+    resume = models.ForeignKey(File, on_delete=models.CASCADE, related_name='resume', blank=True, null=True)
     hero = models.OneToOneField(
         Hero, on_delete=models.CASCADE
     )
@@ -145,7 +147,7 @@ class Social(models.Model):
     name = models.CharField(max_length=255)
     pseudo = models.CharField(max_length=255, blank=True)
     url = models.URLField()
-    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    image = models.ForeignKey(File, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.name} ({self.idUser.name})"

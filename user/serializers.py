@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import Image, Technology, Project, Experience, WorkItem, Work, Hero, About, Footer, User, Social
+from .models import File, Technology, Project, Experience, WorkItem, Work, Hero, About, Footer, User, Social
 
 
-class ImageSerializer(serializers.ModelSerializer):
+class FileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Image
+        model = File
         fields = ['name', 'file']
 
 
@@ -15,7 +15,7 @@ class TechnologySerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    image = ImageSerializer()
+    image = FileSerializer()
     technologies = TechnologySerializer(many=True)
 
     class Meta:
@@ -50,7 +50,7 @@ class WorkSerializer(serializers.ModelSerializer):
 
 
 class HeroSerializer(serializers.ModelSerializer):
-    backgroundImage = ImageSerializer()
+    backgroundImage = FileSerializer()
 
     class Meta:
         model = Hero
@@ -58,8 +58,8 @@ class HeroSerializer(serializers.ModelSerializer):
 
 
 class AboutSerializer(serializers.ModelSerializer):
-    image = ImageSerializer()
-    imageResponsive = ImageSerializer()
+    image = FileSerializer()
+    imageResponsive = FileSerializer()
 
     class Meta:
         model = About
@@ -73,7 +73,7 @@ class FooterSerializer(serializers.ModelSerializer):
 
 
 class SocialSerializer(serializers.ModelSerializer):
-    image = ImageSerializer()
+    image = FileSerializer()
 
     class Meta:
         model = Social
@@ -81,6 +81,8 @@ class SocialSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    logo = FileSerializer()
+    resume = FileSerializer()
     socials = SocialSerializer(many=True, source='social_set')
     hero = HeroSerializer()
     about = AboutSerializer()
@@ -89,5 +91,5 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['name', 'email', 'location', 'locale', 'socials',
+        fields = ['name', 'email', 'location', 'locale', 'logo', 'resume', 'socials',
                   'hero', 'about', 'work', 'footer']
