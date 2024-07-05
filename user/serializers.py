@@ -34,11 +34,11 @@ class ExperienceSerializer(serializers.ModelSerializer):
 
 class WorkItemSerializer(serializers.ModelSerializer):
     projects = ProjectSerializer(many=True)
-    experience = ExperienceSerializer(many=True)
+    experiences = ExperienceSerializer(many=True)
 
     class Meta:
         model = WorkItem
-        fields = ['index', 'hidden', 'title', 'projects', 'experience', 'showProjects', 'showExperiences']
+        fields = ['index', 'hidden', 'title', 'projects', 'experiences', 'showProjects', 'showExperiences']
 
 
 class WorkSerializer(serializers.ModelSerializer):

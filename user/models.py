@@ -55,13 +55,13 @@ class WorkItem(models.Model):
     hidden = models.BooleanField(default=False)
     title = models.CharField(max_length=255)
     projects = models.ManyToManyField(Project, blank=True)
-    experience = models.ManyToManyField(Experience, blank=True)
+    experiences = models.ManyToManyField(Experience, blank=True)
     showProjects = models.BooleanField(default=False)
     showExperiences = models.BooleanField(default=False)
 
     def clean(self):
-        if self.showProjects and self.showExperiences:
-            raise ValidationError("You can't have both showProjects and showExperiences set to true.")
+        if self.showProjects == self.showExperiences:
+            raise ValidationError("You must either set showProjects or showExperiences, but not both.")
 
     def __str__(self):
         return self.title
