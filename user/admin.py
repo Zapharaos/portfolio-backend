@@ -1,11 +1,10 @@
 from django.contrib import admin
-from .models import User, Social, List, ListItem, Theme, Hero, About, Footer, Image, Technology, Project
+from .models import User, Social, Experience, Theme, Hero, About, Footer, Image, Technology, Project
 
 admin.site.register(Theme)
 admin.site.register(User)
 admin.site.register(Social)
-admin.site.register(List)
-admin.site.register(ListItem)
+admin.site.register(Experience)
 admin.site.register(Hero)
 admin.site.register(About)
 admin.site.register(Footer)

@@ -24,6 +24,27 @@ class Project(models.Model):
     image = models.ForeignKey(Image, on_delete=models.CASCADE, blank=True, null=True)
     url = models.URLField(blank=True, null=True)
     technologies = models.ManyToManyField(Technology, blank=True)
+    hidden = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title
+
+
+class Experience(models.Model):
+    title = models.CharField(max_length=255)
+    organisation = models.CharField(max_length=255)
+    period = models.CharField(max_length=255, blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    url = models.URLField(blank=True, null=True)
+    urlShort = models.URLField(blank=True, null=True)
+    description = models.CharField(max_length=1023)
+    technologies = models.ManyToManyField(Technology, blank=True)
+    index = models.IntegerField()
+    hidden = models.BooleanField(default=False)
+
+    def clean(self):
+        if self.urlShort and not self.url:
+            raise ValidationError('You cannot set the urlShort field without setting the default url field.')
 
     def __str__(self):
         return self.title
@@ -94,31 +115,6 @@ class Social(models.Model):
     pseudo = models.CharField(max_length=255, blank=True)
     url = models.URLField()
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
-    hidden = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.name
-
-
-class List(models.Model):
-    idUser = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    index = models.IntegerField(unique=True)
-    hidden = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.name
-
-
-class ListItem(models.Model):
-    idList = models.ForeignKey(List, on_delete=models.CASCADE)
-    index = models.IntegerField(unique=True)
-    organisation = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-    menuName = models.CharField(max_length=255, blank=True, null=True)
-    address = models.CharField(max_length=255, blank=True, null=True)
-    period = models.CharField(max_length=255, blank=True, null=True)
-    description = models.CharField(max_length=511, blank=True, null=True)
     hidden = models.BooleanField(default=False)
 
     def __str__(self):

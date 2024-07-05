@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Social, List, ListItem, Theme, Hero, About, Footer, Image, Technology, Project
+from .models import User, Social, Experience, Theme, Hero, About, Footer, Image, Technology, Project
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -20,7 +20,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['title', 'index', 'description', 'image', 'url', 'technologies']
+        fields = ['title', 'index', 'description', 'image', 'url', 'technologies', 'hidden']
 
 
 class SocialSerializer(serializers.ModelSerializer):
@@ -31,18 +31,13 @@ class SocialSerializer(serializers.ModelSerializer):
         fields = ['index', 'name', 'pseudo', 'url', 'image', 'hidden']
 
 
-class ListItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ListItem
-        fields = ['index', 'organisation', 'name', 'menuName', 'address', 'period', 'description', 'hidden']
-
-
-class ListSerializer(serializers.ModelSerializer):
-    items = ListItemSerializer(many=True, source='listitem_set')
+class ExperienceSerializer(serializers.ModelSerializer):
+    technologies = TechnologySerializer(many=True)
 
     class Meta:
-        model = List
-        fields = ['name', 'index', 'hidden', 'items']
+        model = Experience
+        fields = ['title', 'organisation', 'period', 'location', 'url', 'urlShort',
+                  'description', 'technologies', 'index', 'hidden']
 
 
 class ThemeSerializer(serializers.ModelSerializer):
@@ -80,7 +75,6 @@ class UserSerializer(serializers.ModelSerializer):
     footer = FooterSerializer()
     projects = ProjectSerializer(many=True)
     socials = SocialSerializer(many=True, source='social_set')
-    lists = ListSerializer(many=True, source='list_set')
 
     class Meta:
         model = User
