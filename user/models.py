@@ -10,13 +10,23 @@ class Image(models.Model):
         return self.name
 
 
-class Theme(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    # TODO
-    todo = models.CharField(max_length=7)  # e.g., #FFFFFF
+class Technology(models.Model):
+    name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
+
+
+class Project(models.Model):
+    title = models.CharField(max_length=255)
+    index = models.IntegerField()
+    description = models.CharField(max_length=1023)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE, blank=True, null=True)
+    url = models.URLField(blank=True, null=True)
+    technologies = models.ManyToManyField(Technology, blank=True)
+
+    def __str__(self):
+        return self.title
 
 
 class Hero(models.Model):
@@ -66,6 +76,7 @@ class User(models.Model):
     footer = models.OneToOneField(
         Footer, on_delete=models.CASCADE
     )
+    projects = models.ManyToManyField(Project, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.pk and User.objects.exists():
@@ -109,6 +120,15 @@ class ListItem(models.Model):
     period = models.CharField(max_length=255, blank=True, null=True)
     description = models.CharField(max_length=511, blank=True, null=True)
     hidden = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+
+class Theme(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    # TODO
+    todo = models.CharField(max_length=7)  # e.g., #FFFFFF
 
     def __str__(self):
         return self.name

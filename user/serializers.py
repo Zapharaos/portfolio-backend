@@ -1,11 +1,26 @@
 from rest_framework import serializers
-from .models import User, Social, List, ListItem, Theme, Hero, About, Footer, Image
+from .models import User, Social, List, ListItem, Theme, Hero, About, Footer, Image, Technology, Project
 
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = ['name', 'file']
+
+
+class TechnologySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Technology
+        fields = ['name']
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    image = ImageSerializer()
+    technologies = TechnologySerializer(many=True)
+
+    class Meta:
+        model = Project
+        fields = ['title', 'index', 'description', 'image', 'url', 'technologies']
 
 
 class SocialSerializer(serializers.ModelSerializer):
@@ -63,12 +78,12 @@ class UserSerializer(serializers.ModelSerializer):
     hero = HeroSerializer()
     about = AboutSerializer()
     footer = FooterSerializer()
+    projects = ProjectSerializer(many=True)
     socials = SocialSerializer(many=True, source='social_set')
     lists = ListSerializer(many=True, source='list_set')
 
     class Meta:
         model = User
         fields = ['id', 'name', 'email', 'location', 'locale',
-                  'hero', 'about', 'footer',
-                  'socials', 'lists'
-                  ]
+                  'hero', 'about', 'footer', 'projects',
+                  'socials', 'lists']
