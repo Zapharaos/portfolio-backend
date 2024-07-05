@@ -50,6 +50,31 @@ class Experience(models.Model):
         return f"{self.title} ({self.organisation})"
 
 
+class WorkItem(models.Model):
+    index = models.IntegerField()
+    hidden = models.BooleanField(default=False)
+    title = models.CharField(max_length=255)
+    projects = models.ManyToManyField(Project, blank=True)
+    experience = models.ManyToManyField(Experience, blank=True)
+    showProjects = models.BooleanField(default=False)
+    showExperiences = models.BooleanField(default=False)
+
+    def clean(self):
+        if self.showProjects and self.showExperiences:
+            raise ValidationError("You can't have both showProjects and showExperiences set to true.")
+
+    def __str__(self):
+        return self.title
+
+
+class Work(models.Model):
+    content_type = models.CharField(max_length=255, default='work')
+    items = models.ManyToManyField(WorkItem)
+
+    def __str__(self):
+        return self.content_type
+
+
 class Hero(models.Model):
     content_type = models.CharField(max_length=255, default='hero')
     title = models.CharField(max_length=255)
@@ -97,10 +122,12 @@ class User(models.Model):
     about = models.OneToOneField(
         About, on_delete=models.CASCADE
     )
+    work = models.OneToOneField(
+        Work, on_delete=models.CASCADE
+    )
     footer = models.OneToOneField(
         Footer, on_delete=models.CASCADE
     )
-    projects = models.ManyToManyField(Project, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.pk and User.objects.exists():

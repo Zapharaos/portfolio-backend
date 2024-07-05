@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Image, Technology, Project, Experience, Hero, About, Footer, User, Social
+from .models import Image, Technology, Project, Experience, WorkItem, Work, Hero, About, Footer, User, Social
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -30,6 +30,23 @@ class ExperienceSerializer(serializers.ModelSerializer):
         model = Experience
         fields = ['index', 'hidden', 'title', 'organisation', 'period', 'location', 'url', 'urlShort',
                   'description', 'technologies']
+
+
+class WorkItemSerializer(serializers.ModelSerializer):
+    projects = ProjectSerializer(many=True)
+    experience = ExperienceSerializer(many=True)
+
+    class Meta:
+        model = WorkItem
+        fields = ['index', 'hidden', 'title', 'projects', 'experience', 'showProjects', 'showExperiences']
+
+
+class WorkSerializer(serializers.ModelSerializer):
+    items = WorkItemSerializer(many=True)
+
+    class Meta:
+        model = Work
+        fields = ['items']
 
 
 class HeroSerializer(serializers.ModelSerializer):
@@ -67,10 +84,10 @@ class UserSerializer(serializers.ModelSerializer):
     socials = SocialSerializer(many=True, source='social_set')
     hero = HeroSerializer()
     about = AboutSerializer()
+    work = WorkSerializer()
     footer = FooterSerializer()
-    projects = ProjectSerializer(many=True)
 
     class Meta:
         model = User
         fields = ['name', 'email', 'location', 'locale', 'socials',
-                  'hero', 'about', 'footer', 'projects']
+                  'hero', 'about', 'work', 'footer']
