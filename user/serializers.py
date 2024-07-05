@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Social, Experience, Theme, Hero, About, Footer, Image, Technology, Project
+from .models import Image, Technology, Project, Experience, Hero, About, Footer, User, Social
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -20,15 +20,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['title', 'index', 'description', 'image', 'url', 'technologies', 'hidden']
-
-
-class SocialSerializer(serializers.ModelSerializer):
-    image = ImageSerializer()
-
-    class Meta:
-        model = Social
-        fields = ['index', 'name', 'pseudo', 'url', 'image', 'hidden']
+        fields = ['index', 'hidden', 'url', 'title', 'description', 'image', 'technologies']
 
 
 class ExperienceSerializer(serializers.ModelSerializer):
@@ -36,14 +28,8 @@ class ExperienceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Experience
-        fields = ['title', 'organisation', 'period', 'location', 'url', 'urlShort',
-                  'description', 'technologies', 'index', 'hidden']
-
-
-class ThemeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Theme
-        fields = ['name', 'todo']
+        fields = ['index', 'hidden', 'title', 'organisation', 'period', 'location', 'url', 'urlShort',
+                  'description', 'technologies']
 
 
 class HeroSerializer(serializers.ModelSerializer):
@@ -69,15 +55,22 @@ class FooterSerializer(serializers.ModelSerializer):
         fields = ['title', 'subTitle', 'showLocation', 'showSocials', 'showEmail', 'showResume']
 
 
+class SocialSerializer(serializers.ModelSerializer):
+    image = ImageSerializer()
+
+    class Meta:
+        model = Social
+        fields = ['index', 'hidden', 'name', 'pseudo', 'url', 'image']
+
+
 class UserSerializer(serializers.ModelSerializer):
+    socials = SocialSerializer(many=True, source='social_set')
     hero = HeroSerializer()
     about = AboutSerializer()
     footer = FooterSerializer()
     projects = ProjectSerializer(many=True)
-    socials = SocialSerializer(many=True, source='social_set')
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'location', 'locale',
-                  'hero', 'about', 'footer', 'projects',
-                  'socials', 'lists']
+        fields = ['name', 'email', 'location', 'locale', 'socials',
+                  'hero', 'about', 'footer', 'projects']
