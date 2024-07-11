@@ -1,8 +1,6 @@
-import re
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from user.models import User
-from user.serializers import UserSerializer
 from user.views import SingletonUserView
 from user.tests.utils import create_sample_user
 
