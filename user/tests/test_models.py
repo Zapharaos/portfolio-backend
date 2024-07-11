@@ -1,100 +1,89 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from user.models import User, Theme, List, ListItem, Social
+from user.models import User
+from user.tests.utils import create_sample_user, create_sample_file, create_sample_technology, create_sample_project, \
+    create_sample_experience, create_sample_work_item, create_sample_work, create_sample_hero, create_sample_about, \
+    create_sample_footer, create_sample_social
 
 
-class ThemeModelTest(TestCase):
-    def test_create_theme(self):
-        theme = Theme.objects.create(name="Light", todo="#FFFFFF")
-        self.assertEqual(theme.name, "Light")
-        self.assertEqual(theme.todo, "#FFFFFF")
+class FileModelTest(TestCase):
+    def test_create_file(self):
+        file = create_sample_file(name="Name")
+        self.assertEqual(file.name, "Name")
 
-    def test_unique_name(self):
-        Theme.objects.create(name="Light", todo="#FFFFFF")
+
+class TechnologyModelTest(TestCase):
+    def test_create_technology(self):
+        technology = create_sample_technology(name="Name")
+        self.assertEqual(technology.name, "Name")
+
+
+class ProjectModelTest(TestCase):
+    def test_create_project(self):
+        project = create_sample_project(title="Title")
+        self.assertEqual(project.title, "Title")
+
+
+class ExperienceModelTest(TestCase):
+    def test_create_experience(self):
+        experience = create_sample_experience(title="Title")
+        self.assertEqual(experience.title, "Title")
+
+    def test_url_short_validation(self):
         with self.assertRaises(ValidationError):
-            theme = Theme(name="Light", todo="#000000")
-            theme.full_clean()
+            experience = create_sample_experience(title="Title", url=None)
+            experience.clean()
 
 
-class UserModelTests(TestCase):
+class WorkItemModelTest(TestCase):
+    def test_create_work_item(self):
+        work_item = create_sample_work_item(title="Title")
+        self.assertEqual(work_item.title, "Title")
+
+    def test_validation_show_fields(self):
+        with self.assertRaises(ValidationError):
+            work_item = create_sample_work_item(title="Title", showProjects=True, showExperiences=True)
+            work_item.clean()
+
+
+class WorkModelTest(TestCase):
+
+    def test_create_work(self):
+        work = create_sample_work(content_type="Work")
+        self.assertEqual(work.content_type, "Work")
+
+
+class HeroModelTest(TestCase):
+    def test_create_hero(self):
+        hero = create_sample_hero(content_type="Hero")
+        self.assertEqual(hero.content_type, "Hero")
+
+
+class AboutModelTest(TestCase):
+    def test_create_about(self):
+        about = create_sample_about(content_type="About")
+        self.assertEqual(about.content_type, "About")
+
+
+class FooterModelTest(TestCase):
+    def test_create_footer(self):
+        footer = create_sample_footer(content_type="Footer")
+        self.assertEqual(footer.content_type, "Footer")
+
+
+class UserModelTest(TestCase):
 
     def test_unique_user(self):
-        User.objects.create(hero="Some Hero", email="unique@email.com")
+        create_sample_user()
         with self.assertRaises(ValidationError):
-            user = User.objects.create(hero="Another Hero", email="another@email.com")
-            user.full_clean()
+            create_sample_user()
 
     def test_user_creation(self):
-        theme_light = Theme.objects.create(name="Light", todo="#FFFFFF")
-        theme_dark = Theme.objects.create(name="Dark", todo="#000000")
-        User.objects.create(
-            hero="Hero",
-            description="Description",
-            email="test@example.com",
-            logo="path/to/logo.png",
-            photo="path/to/photo.png",
-            curriculum="path/to/curriculum.pdf",
-            theme_light=theme_light,
-            theme_dark=theme_dark
-        )
+        create_sample_user()
         self.assertEqual(User.objects.count(), 1)
 
 
 class SocialModelTest(TestCase):
     def test_create_social(self):
-        user = User.objects.create(hero="Hero", description="Description", email="test@example.com")
-        social = Social.objects.create(idUser=user, name="Test", url="https://test.com", hidden=False)
-        self.assertEqual(social.name, "Test")
-        self.assertEqual(social.url, "https://test.com")
-
-    def test_unique_constraints(self):
-        user = User.objects.create(hero="Hero", description="Description", email="test@example.com")
-        Social.objects.create(idUser=user, name="Test", url="https://test.com", hidden=False)
-        with self.assertRaises(ValidationError):
-            social = Social(idUser=user, name="Test", url="https://test.com/another")
-            social.full_clean()
-        with self.assertRaises(ValidationError):
-            social = Social(idUser=user, name="Test Another", url="https://test.com")
-            social.full_clean()
-
-
-class ListModelTest(TestCase):
-    def test_create_list(self):
-        user = User.objects.create(hero="Hero", description="Description", email="test@example.com")
-        lst = List.objects.create(idUser=user, name="List Name", index=1, hidden=False)
-        self.assertEqual(lst.name, "List Name")
-        self.assertEqual(lst.index, 1)
-
-    def test_unique_index_per_user(self):
-        user = User.objects.create(hero="Hero", description="Description", email="test@example.com")
-        List.objects.create(idUser=user, name="List 1", index=1, hidden=False)
-        with self.assertRaises(ValidationError):
-            lst = List(idUser=user, name="List 2", index=1)
-            lst.full_clean()
-
-
-class ListItemModelTest(TestCase):
-    def test_create_list_item(self):
-        user = User.objects.create(hero="Hero", description="Description", email="test@example.com")
-        lst = List.objects.create(idUser=user, name="List Name", index=1, hidden=False)
-        list_item = ListItem.objects.create(
-            idList=lst,
-            index=1,
-            organisation="Org",
-            name="Item Name",
-            menuName="Menu Name",
-            address="Address",
-            period="Period",
-            description="Description",
-            hidden=False
-        )
-        self.assertEqual(list_item.name, "Item Name")
-        self.assertEqual(list_item.index, 1)
-
-    def test_unique_index_per_list(self):
-        user = User.objects.create(hero="Hero", description="Description", email="test@example.com")
-        lst = List.objects.create(idUser=user, name="List Name", index=1, hidden=False)
-        ListItem.objects.create(idList=lst, index=1, organisation="Org", name="Item 1")
-        with self.assertRaises(ValidationError):
-            list_item = ListItem(idList=lst, index=1, organisation="Org", name="Item 2")
-            list_item.full_clean()
+        social = create_sample_social(name="Name")
+        self.assertEqual(social.name, "Name")
