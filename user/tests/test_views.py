@@ -3,17 +3,14 @@ from django.urls import reverse
 from user.models import User
 from user.serializers import UserSerializer
 from user.views import SingletonUserView
+from user.tests.utils import create_sample_user
 
 
 class SingletonUserViewTests(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
-        self.user = User.objects.create(
-            hero='Test User',
-            description='Description',
-            email='test@email.com',
-        )
+        self.user = create_sample_user()
 
     def test_get_user_success(self):
         url = reverse('singleton-user')
