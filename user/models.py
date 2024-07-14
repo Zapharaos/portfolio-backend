@@ -5,6 +5,13 @@ from django.db import models
 class File(models.Model):
     name = models.CharField(max_length=255)
     file = models.FileField()
+    creditsUrl = models.URLField(blank=True, null=True)
+    creditsShortUrl = models.CharField(max_length=255, blank=True, null=True)
+
+    def clean(self):
+        if self.creditsShortUrl and not self.creditsUrl:
+            raise ValidationError('You can\'t set the creditsShortUrl field without setting'
+                                  'the default creditsUrl field.')
 
     def __str__(self):
         return self.name

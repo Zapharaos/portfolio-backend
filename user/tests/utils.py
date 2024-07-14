@@ -1,8 +1,11 @@
 from user.models import File, Technology, Project, Experience, WorkItem, Work, Hero, About, Footer, User, Social
 
 
-def create_sample_file(name="Name"):
-    return File.objects.create(name=name, file="path/to/logo.png")
+def create_sample_file(name="Name", creditsUrl="https://credits.com"):
+    return File.objects.create(
+        name=name, file="path/to/logo.png",
+        creditsUrl=creditsUrl, creditsShortUrl="credits"
+    )
 
 
 def create_sample_technology(name="Name"):

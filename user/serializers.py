@@ -5,7 +5,7 @@ from .models import File, Technology, Project, Experience, WorkItem, Work, Hero,
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = ['name', 'file']
+        fields = ['name', 'file', 'creditsUrl', 'creditsShortUrl']
 
 
 class TechnologySerializer(serializers.ModelSerializer):

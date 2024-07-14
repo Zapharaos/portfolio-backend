@@ -15,7 +15,8 @@ class FileSerializerTests(TestCase):
         serializer = FileSerializer(create_sample_file)
         # Check for presence of all expected fields
         self.assertEqual(set(serializer.fields.keys()), {
-            'name', 'file'
+            'name', 'file',
+            'creditsUrl', 'creditsShortUrl'
         })
 
 
