@@ -13,5 +13,6 @@ ENV PYTHONUNBUFFERED 1
 # Install dependencies
 RUN pip install --upgrade pip setuptools
 RUN pip install -r requirements.txt --no-cache-dir
+RUN pip install gunicorn
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
