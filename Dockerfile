@@ -13,7 +13,6 @@ ENV PYTHONUNBUFFERED 1
 # Install dependencies
 RUN pip install --upgrade pip setuptools
 RUN pip install -r requirements.txt --no-cache-dir
+RUN pip install gunicorn
 
-# Run the command to start the Django development server
-RUN chmod +x /usr/src/app/entrypoint.sh
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]

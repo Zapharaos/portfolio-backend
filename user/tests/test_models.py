@@ -11,6 +11,11 @@ class FileModelTest(TestCase):
         file = create_sample_file(name="Name")
         self.assertEqual(file.name, "Name")
 
+    def test_url_short_validation(self):
+        with self.assertRaises(ValidationError):
+            file = create_sample_file(name="Name", creditsUrl=None)
+            file.clean()
+
 
 class TechnologyModelTest(TestCase):
     def test_create_technology(self):

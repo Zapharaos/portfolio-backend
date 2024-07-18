@@ -32,7 +32,6 @@ DEBUG = os.environ.get('DJANGO_DEBUG_MODE', False)
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(",")
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -139,8 +138,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# CSRF
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS').split(",")
+
 # CORS
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:' + os.environ['FRONTEND_PORT'],
-    'https://' + os.environ['DOMAIN_NAME'],
-]
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS').split(",")

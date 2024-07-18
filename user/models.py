@@ -5,6 +5,13 @@ from django.db import models
 class File(models.Model):
     name = models.CharField(max_length=255)
     file = models.FileField()
+    creditsUrl = models.URLField(blank=True, null=True)
+    creditsShortUrl = models.CharField(max_length=255, blank=True, null=True)
+
+    def clean(self):
+        if self.creditsShortUrl and not self.creditsUrl:
+            raise ValidationError('You can\'t set the creditsShortUrl field without setting'
+                                  'the default creditsUrl field.')
 
     def __str__(self):
         return self.name
@@ -22,7 +29,7 @@ class Project(models.Model):
     hidden = models.BooleanField(default=False)
     url = models.URLField(blank=True, null=True)
     title = models.CharField(max_length=255)
-    description = models.CharField(max_length=1023)
+    description = models.TextField()
     image = models.ForeignKey(File, on_delete=models.CASCADE, blank=True, null=True)
     technologies = models.ManyToManyField(Technology, blank=True)
 
@@ -39,7 +46,7 @@ class Experience(models.Model):
     location = models.CharField(max_length=255, blank=True, null=True)
     url = models.URLField(blank=True, null=True)
     urlShort = models.URLField(blank=True, null=True)
-    description = models.CharField(max_length=1023)
+    description = models.TextField()
     technologies = models.ManyToManyField(Technology, blank=True)
 
     def clean(self):
@@ -78,7 +85,7 @@ class Work(models.Model):
 class Hero(models.Model):
     content_type = models.CharField(max_length=255, default='hero')
     title = models.CharField(max_length=255)
-    tagline = models.CharField(max_length=255)
+    tagline = models.TextField()
     callToActionContent = models.CharField(max_length=255)
     backgroundImage = models.ForeignKey(File, on_delete=models.CASCADE)
 
@@ -92,7 +99,7 @@ class About(models.Model):
     imageResponsive = models.ForeignKey(
         File, on_delete=models.CASCADE, related_name='imageResponsive', blank=True, null=True
     )
-    description = models.CharField(max_length=1023)
+    description = models.TextField()
 
     def __str__(self):
         return self.content_type
