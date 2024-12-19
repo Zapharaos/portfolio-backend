@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Generate static/
 python manage.py collectstatic --noinput

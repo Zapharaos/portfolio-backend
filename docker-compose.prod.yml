@@ -1,0 +1,20 @@
+services:
+
+  portfolio-backend:
+    restart: unless-stopped
+    container_name: portfolio-backend
+    build: .
+    command: gunicorn portfolio-backend.wsgi:application --bind 0.0.0.0:${DJANGO_PORT}
+    env_file:
+      - .env
+    ports:
+      - "${DJANGO_PORT}:${DJANGO_PORT}"
+    volumes:
+      - .:/usr/src/app/
+    networks:
+      - vps-network
+
+networks:
+    vps-network:
+       name: "back_vps-network"
+       external: true
