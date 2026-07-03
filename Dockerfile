@@ -1,5 +1,6 @@
 # Pull base image
-FROM python:latest
+# Pinned to 3.12: Django 5.0.x does not support Python 3.13/3.14
+FROM python:3.12
 
 # Set working directory
 WORKDIR /usr/src/app
