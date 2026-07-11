@@ -41,6 +41,8 @@ class ProjectLinkInline(admin.TabularInline):
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     inlines = [ProjectTechnologyInline, ProjectLinkInline]
+    list_display = ['title', 'healthUp', 'healthCheckedAt', 'healthFailures']
+    readonly_fields = ['healthUp', 'healthCheckedAt', 'healthFailures']
 
 
 class ExperienceTechnologyInline(admin.TabularInline):

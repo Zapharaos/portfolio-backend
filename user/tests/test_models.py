@@ -44,6 +44,19 @@ class ProjectModelTest(TestCase):
         project = create_sample_project(title="Title")
         self.assertEqual(project.title, "Title")
 
+    def test_clearing_health_url_resets_state(self):
+        project = create_sample_project(title="Title")
+        project.healthUrl = "https://svc.example/health"
+        project.healthUp = True
+        project.healthFailures = 3
+        project.save()
+        # Removing the URL must clear the stale monitoring state.
+        project.healthUrl = ""
+        project.save()
+        project.refresh_from_db()
+        self.assertIsNone(project.healthUp)
+        self.assertEqual(project.healthFailures, 0)
+
 
 class ProjectLinkModelTest(TestCase):
     def test_create_project_link(self):

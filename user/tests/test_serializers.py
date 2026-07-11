@@ -2,8 +2,8 @@ from django.test import TestCase
 from user.models import Project, Experience
 from user.serializers import (
     SocialSerializer,
-    UserSerializer, FileSerializer, TechnologySerializer, ProjectSerializer, ProjectLinkSerializer,
-    ExperienceSerializer, FooterSerializer, ThemeSerializer,
+    UserSerializer, FileSerializer, TechnologySerializer, ProjectSerializer, ProjectHealthSerializer,
+    ProjectLinkSerializer, ExperienceSerializer, FooterSerializer, ThemeSerializer,
     AboutSerializer, HeroSerializer, WorkSerializer, WorkItemSerializer,
 )
 from user.tests.utils import create_sample_user, create_sample_file, create_sample_technology, create_sample_project, \
@@ -43,8 +43,25 @@ class ProjectSerializerTests(TestCase):
         serializer = ProjectSerializer(create_sample_project())
         # Check for presence of all expected fields
         self.assertEqual(set(serializer.fields.keys()), {
-            'index', 'hidden', 'url', 'title',
-            'description', 'image', 'technologies', 'links',
+            'id', 'index', 'hidden', 'url', 'title',
+            'description', 'category', 'metric', 'isNew',
+            'image', 'technologies', 'links',
+        })
+
+    def test_project_serializer_does_not_expose_health(self):
+        # Health (incl. the internal URL) is served by the dedicated endpoint.
+        serializer = ProjectSerializer(create_sample_project())
+        for field in ('healthUrl', 'healthUp', 'healthCheckedAt'):
+            self.assertNotIn(field, serializer.fields.keys())
+            self.assertNotIn(field, serializer.data)
+
+
+class ProjectHealthSerializerTests(TestCase):
+
+    def test_project_health_serializer_fields(self):
+        serializer = ProjectHealthSerializer(create_sample_project())
+        self.assertEqual(set(serializer.fields.keys()), {
+            'id', 'healthUp', 'healthCheckedAt',
         })
 
 

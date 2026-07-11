@@ -143,3 +143,29 @@ CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS').split(",")
 
 # CORS
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS').split(",")
+
+# DRF — per-IP rate limiting (ScopedRateThrottle; only views with a
+# `throttle_scope` are limited).
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'health': os.environ.get('THROTTLE_HEALTH', '30/min'),
+        'projects': os.environ.get('THROTTLE_PROJECTS', '60/min'),
+        'user': os.environ.get('THROTTLE_USER', '60/min'),
+    },
+}
+
+# Project health checks
+# Lazy refresh: GET /projects/health/ synchronously re-probes stale monitored
+# projects (parallel, TTL-throttled) and returns fresh state. Disable to serve
+# only stored state (e.g. refreshed by the manual `check_project_health` command).
+PROJECT_HEALTH_LAZY_REFRESH = os.environ.get('PROJECT_HEALTH_LAZY_REFRESH', 'true').lower() != 'false'
+# A project is re-probed at most once per this many seconds (throttle).
+PROJECT_HEALTH_MAX_AGE = int(os.environ.get('PROJECT_HEALTH_MAX_AGE', '600'))
+# Max concurrent probes. Probes are I/O-bound, so a high ceiling keeps a refresh
+# bounded to ~one timeout window even with many monitored projects.
+PROJECT_HEALTH_MAX_WORKERS = int(os.environ.get('PROJECT_HEALTH_MAX_WORKERS', '32'))
+# How long clients may reuse a health response before refetching (Cache-Control).
+PROJECT_HEALTH_CLIENT_TTL = int(os.environ.get('PROJECT_HEALTH_CLIENT_TTL', '60'))

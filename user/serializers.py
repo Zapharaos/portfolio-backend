@@ -31,13 +31,23 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['index', 'hidden', 'url', 'title', 'description', 'image', 'technologies', 'links']
+        # Health lives on its own endpoint (ProjectHealthSerializer) so this
+        # content payload stays side-effect-free and cacheable. `id` is the join
+        # key the frontend uses to merge health back in.
+        fields = ['id', 'index', 'hidden', 'url', 'title', 'description', 'category', 'metric', 'isNew',
+                  'image', 'technologies', 'links']
 
     def get_technologies(self, obj):
         # The through model's Meta.ordering does not apply to M2M traversal,
         # so order explicitly by ProjectTechnology.position.
         techs = obj.technologies.order_by('projecttechnology__position')
         return TechnologySerializer(techs, many=True).data
+
+
+class ProjectHealthSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'healthUp', 'healthCheckedAt']
 
 
 class ExperienceSerializer(serializers.ModelSerializer):

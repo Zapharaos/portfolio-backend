@@ -44,8 +44,38 @@ class Project(models.Model):
     url = models.URLField(blank=True, null=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
+    category = models.CharField(
+        max_length=50, blank=True, default='',
+        help_text='Badge court affiché sur la carte (ex. "Secondaire", "Pro"). Vide = pas de badge.',
+    )
+    metric = models.CharField(
+        max_length=100, blank=True, default='',
+        help_text='Métrique courte affichée sous la description (ex. "~6k € ARR", "10k users").',
+    )
+    isNew = models.BooleanField(default=False, help_text='Affiche un ruban "Nouveau" sur la carte.')
     image = models.ForeignKey(File, on_delete=models.CASCADE, blank=True, null=True)
     technologies = models.ManyToManyField(Technology, blank=True, through='ProjectTechnology')
+    healthUrl = models.URLField(
+        blank=True, null=True,
+        help_text='Endpoint de santé à vérifier périodiquement. Vide = pas de check.',
+    )
+    healthUp = models.BooleanField(
+        null=True, default=None, editable=False,
+        help_text='Dernier état connu ; null = jamais vérifié.',
+    )
+    healthCheckedAt = models.DateTimeField(null=True, default=None, editable=False)
+    healthFailures = models.PositiveSmallIntegerField(
+        default=0, editable=False,
+        help_text='Échecs consécutifs (anti-faux-négatifs).',
+    )
+
+    def save(self, *args, **kwargs):
+        # No health URL means no monitoring: clear any stale state so the badge
+        # disappears when the admin removes the URL.
+        if not self.healthUrl:
+            self.healthUp = None
+            self.healthFailures = 0
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
