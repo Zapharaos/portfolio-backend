@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    File, Technology, Project, ProjectLink, Experience, WorkItem, Work, Hero, About, Footer, User, Social
+    File, Technology, Project, ProjectLink, Experience, WorkItem, Work, Hero, About, Footer, Theme, User, Social
 )
 
 
@@ -103,10 +103,17 @@ class SocialSerializer(serializers.ModelSerializer):
         fields = ['index', 'hidden', 'name', 'pseudo', 'url', 'image', 'color']
 
 
+class ThemeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Theme
+        fields = ['name', 'background', 'text', 'primary']
+
+
 class UserSerializer(serializers.ModelSerializer):
     logo = FileSerializer()
     resume = FileSerializer()
     socials = SocialSerializer(many=True, source='social_set')
+    theme = ThemeSerializer()
     hero = HeroSerializer()
     about = AboutSerializer()
     work = WorkSerializer()
@@ -114,5 +121,5 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['name', 'email', 'location', 'locale', 'logo', 'resume', 'socials',
+        fields = ['name', 'email', 'location', 'locale', 'logo', 'resume', 'socials', 'theme',
                   'hero', 'about', 'work', 'footer']

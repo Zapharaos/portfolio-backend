@@ -1,7 +1,8 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from .models import (
     File, Technology, Project, ProjectTechnology, ProjectLink,
-    Experience, ExperienceTechnology, WorkItem, Work, Hero, About, Footer, User, Social
+    Experience, ExperienceTechnology, WorkItem, Work, Hero, About, Footer, Theme, User, Social
 )
 
 
@@ -9,6 +10,22 @@ from .models import (
 class TechnologyAdmin(admin.ModelAdmin):
     list_display = ['name', 'color']
     list_editable = ['color']
+
+
+@admin.register(Theme)
+class ThemeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'background', 'text', 'primary', 'preview']
+
+    @admin.display(description='Preview')
+    def preview(self, obj):
+        swatch = (
+            '<span style="display:inline-block;width:16px;height:16px;'
+            'border:1px solid #888;border-radius:3px;background:{};"></span>'
+        )
+        return format_html(
+            '<span style="display:inline-flex;gap:4px;">' + swatch * 3 + '</span>',
+            obj.background, obj.text, obj.primary,
+        )
 
 
 class ProjectTechnologyInline(admin.TabularInline):

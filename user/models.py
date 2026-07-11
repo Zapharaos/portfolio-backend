@@ -188,6 +188,28 @@ class Footer(models.Model):
         return self.content_type
 
 
+class Theme(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    background = models.CharField(
+        max_length=7,
+        validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
+        help_text='Token --color-background au format #RRGGBB.',
+    )
+    text = models.CharField(
+        max_length=7,
+        validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
+        help_text='Token --color-text au format #RRGGBB.',
+    )
+    primary = models.CharField(
+        max_length=7,
+        validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
+        help_text='Token --color-primary au format #RRGGBB.',
+    )
+
+    def __str__(self):
+        return self.name
+
+
 class User(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
@@ -195,6 +217,10 @@ class User(models.Model):
     locale = models.CharField(max_length=255, blank=True, null=True)
     logo = models.ForeignKey(File, on_delete=models.CASCADE, related_name='logo')
     resume = models.ForeignKey(File, on_delete=models.CASCADE, related_name='resume', blank=True, null=True)
+    theme = models.ForeignKey(
+        Theme, on_delete=models.SET_NULL, blank=True, null=True,
+        help_text='Thème actif ; vide = tokens par défaut du frontend.',
+    )
     hero = models.OneToOneField(
         Hero, on_delete=models.CASCADE
     )

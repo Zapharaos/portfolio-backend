@@ -3,13 +3,13 @@ from user.models import Project, Experience
 from user.serializers import (
     SocialSerializer,
     UserSerializer, FileSerializer, TechnologySerializer, ProjectSerializer, ProjectLinkSerializer,
-    ExperienceSerializer, FooterSerializer,
+    ExperienceSerializer, FooterSerializer, ThemeSerializer,
     AboutSerializer, HeroSerializer, WorkSerializer, WorkItemSerializer,
 )
 from user.tests.utils import create_sample_user, create_sample_file, create_sample_technology, create_sample_project, \
     create_sample_project_technology, create_sample_project_link, create_sample_experience, \
     create_sample_experience_technology, create_sample_work_item, create_sample_work, create_sample_hero, \
-    create_sample_about, create_sample_footer, create_sample_social
+    create_sample_about, create_sample_footer, create_sample_social, create_sample_theme
 
 
 class FileSerializerTests(TestCase):
@@ -202,6 +202,15 @@ class SocialSerializerTests(TestCase):
         self.assertEqual(serializer.data['color'], '')
 
 
+class ThemeSerializerTests(TestCase):
+
+    def test_theme_serializer_fields(self):
+        serializer = ThemeSerializer(create_sample_theme())
+        self.assertEqual(set(serializer.fields.keys()), {
+            'name', 'background', 'text', 'primary',
+        })
+
+
 class UserSerializerTests(TestCase):
 
     def test_user_serializer_fields_and_nested_serializers(self):
@@ -209,5 +218,16 @@ class UserSerializerTests(TestCase):
         # Check for presence of all expected fields
         self.assertEqual(set(serializer.fields.keys()), {
             'name', 'email', 'location', 'locale', 'logo', 'resume',
-            'socials', 'hero', 'about', 'work', 'footer',
+            'socials', 'theme', 'hero', 'about', 'work', 'footer',
+        })
+
+    def test_user_serializer_theme_null_when_absent(self):
+        serializer = UserSerializer(create_sample_user())
+        self.assertIsNone(serializer.data['theme'])
+
+    def test_user_serializer_theme_nested_when_present(self):
+        user = create_sample_user(theme=create_sample_theme(name="Ocean", primary="#00add8"))
+        data = UserSerializer(user).data
+        self.assertEqual(data['theme'], {
+            'name': 'Ocean', 'background': '#181818', 'text': '#ffffff', 'primary': '#00add8',
         })

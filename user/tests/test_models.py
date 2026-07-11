@@ -1,9 +1,9 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from user.models import User
+from user.models import User, Theme
 from user.tests.utils import create_sample_user, create_sample_file, create_sample_technology, create_sample_project, \
     create_sample_project_link, create_sample_experience, create_sample_experience_technology, \
-    create_sample_work_item, create_sample_work, \
+    create_sample_work_item, create_sample_work, create_sample_theme, \
     create_sample_hero, create_sample_about, create_sample_footer, create_sample_social
 
 
@@ -112,6 +112,29 @@ class FooterModelTest(TestCase):
     def test_create_footer(self):
         footer = create_sample_footer(content_type="Footer")
         self.assertEqual(footer.content_type, "Footer")
+
+
+class ThemeModelTest(TestCase):
+    def test_create_theme(self):
+        theme = create_sample_theme(name="Dark")
+        self.assertEqual(theme.name, "Dark")
+
+    def test_valid_colors_pass_validation(self):
+        theme = create_sample_theme()
+        theme.full_clean()
+
+    def test_invalid_color_fails_validation(self):
+        theme = create_sample_theme()
+        theme.primary = "orange"
+        with self.assertRaises(ValidationError):
+            theme.full_clean()
+
+    def test_delete_theme_sets_user_theme_null(self):
+        theme = create_sample_theme()
+        user = create_sample_user(theme=theme)
+        theme.delete()
+        user.refresh_from_db()
+        self.assertIsNone(user.theme)
 
 
 class UserModelTest(TestCase):

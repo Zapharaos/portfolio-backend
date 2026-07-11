@@ -1,6 +1,6 @@
 from user.models import (
     File, Technology, Project, ProjectTechnology, ProjectLink,
-    Experience, ExperienceTechnology, WorkItem, Work, Hero, About, Footer, User, Social
+    Experience, ExperienceTechnology, WorkItem, Work, Hero, About, Footer, Theme, User, Social
 )
 
 
@@ -97,10 +97,14 @@ def create_sample_footer(content_type="content_type"):
     )
 
 
-def create_sample_user():
+def create_sample_theme(name="Theme", background="#181818", text="#ffffff", primary="#ffa500"):
+    return Theme.objects.create(name=name, background=background, text=text, primary=primary)
+
+
+def create_sample_user(theme=None):
     return User.objects.create(
         name="Test User", email="test@example.com", location="location", locale="locale",
-        logo=create_sample_file(), resume=create_sample_file(),
+        logo=create_sample_file(), resume=create_sample_file(), theme=theme,
         hero=create_sample_hero(), about=create_sample_about(),
         work=create_sample_work(), footer=create_sample_footer()
     )
