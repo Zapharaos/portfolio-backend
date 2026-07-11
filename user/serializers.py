@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import File, Technology, Project, Experience, WorkItem, Work, Hero, About, Footer, User, Social
+from .models import (
+    File, Technology, Project, ProjectLink, Experience, WorkItem, Work, Hero, About, Footer, User, Social
+)
 
 
 class FileSerializer(serializers.ModelSerializer):
@@ -11,25 +13,46 @@ class FileSerializer(serializers.ModelSerializer):
 class TechnologySerializer(serializers.ModelSerializer):
     class Meta:
         model = Technology
-        fields = ['name']
+        fields = ['name', 'color']
+
+
+class ProjectLinkSerializer(serializers.ModelSerializer):
+    icon = FileSerializer()
+
+    class Meta:
+        model = ProjectLink
+        fields = ['kind', 'url', 'label', 'icon', 'color', 'index']
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     image = FileSerializer()
-    technologies = TechnologySerializer(many=True)
+    technologies = serializers.SerializerMethodField()
+    links = ProjectLinkSerializer(many=True)
 
     class Meta:
         model = Project
-        fields = ['index', 'hidden', 'url', 'title', 'description', 'image', 'technologies']
+        fields = ['index', 'hidden', 'url', 'title', 'description', 'image', 'technologies', 'links']
+
+    def get_technologies(self, obj):
+        # The through model's Meta.ordering does not apply to M2M traversal,
+        # so order explicitly by ProjectTechnology.position.
+        techs = obj.technologies.order_by('projecttechnology__position')
+        return TechnologySerializer(techs, many=True).data
 
 
 class ExperienceSerializer(serializers.ModelSerializer):
-    technologies = TechnologySerializer(many=True)
+    technologies = serializers.SerializerMethodField()
 
     class Meta:
         model = Experience
         fields = ['index', 'hidden', 'title', 'organisation', 'period', 'location', 'url', 'urlShort',
                   'description', 'technologies']
+
+    def get_technologies(self, obj):
+        # The through model's Meta.ordering does not apply to M2M traversal,
+        # so order explicitly by ExperienceTechnology.position.
+        techs = obj.technologies.order_by('experiencetechnology__position')
+        return TechnologySerializer(techs, many=True).data
 
 
 class WorkItemSerializer(serializers.ModelSerializer):
@@ -77,7 +100,7 @@ class SocialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Social
-        fields = ['index', 'hidden', 'name', 'pseudo', 'url', 'image']
+        fields = ['index', 'hidden', 'name', 'pseudo', 'url', 'image', 'color']
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -2,8 +2,9 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from user.models import User
 from user.tests.utils import create_sample_user, create_sample_file, create_sample_technology, create_sample_project, \
-    create_sample_experience, create_sample_work_item, create_sample_work, create_sample_hero, create_sample_about, \
-    create_sample_footer, create_sample_social
+    create_sample_project_link, create_sample_experience, create_sample_experience_technology, \
+    create_sample_work_item, create_sample_work, \
+    create_sample_hero, create_sample_about, create_sample_footer, create_sample_social
 
 
 class FileModelTest(TestCase):
@@ -22,11 +23,38 @@ class TechnologyModelTest(TestCase):
         technology = create_sample_technology(name="Name")
         self.assertEqual(technology.name, "Name")
 
+    def test_color_defaults_empty(self):
+        technology = create_sample_technology(name="Name")
+        self.assertEqual(technology.color, "")
+
+    def test_valid_color_passes_validation(self):
+        technology = create_sample_technology(name="Name")
+        technology.color = "#1a2B3c"
+        technology.full_clean()
+
+    def test_invalid_color_fails_validation(self):
+        technology = create_sample_technology(name="Name")
+        technology.color = "not-a-hex"
+        with self.assertRaises(ValidationError):
+            technology.full_clean()
+
 
 class ProjectModelTest(TestCase):
     def test_create_project(self):
         project = create_sample_project(title="Title")
         self.assertEqual(project.title, "Title")
+
+
+class ProjectLinkModelTest(TestCase):
+    def test_create_project_link(self):
+        link = create_sample_project_link(kind='github')
+        self.assertEqual(link.kind, 'github')
+
+    def test_links_ordered_by_index(self):
+        project = create_sample_project()
+        create_sample_project_link(project=project, kind='github', index=20)
+        create_sample_project_link(project=project, kind='website', index=10)
+        self.assertEqual([link.kind for link in project.links.all()], ['website', 'github'])
 
 
 class ExperienceModelTest(TestCase):
@@ -38,6 +66,16 @@ class ExperienceModelTest(TestCase):
         with self.assertRaises(ValidationError):
             experience = create_sample_experience(title="Title", url=None)
             experience.clean()
+
+    def test_technologies_ordered_by_position(self):
+        experience = create_sample_experience()
+        experience.experiencetechnology_set.all().delete()
+        create_sample_experience_technology(experience=experience,
+                                            technology=create_sample_technology(name="Z"), position=20)
+        create_sample_experience_technology(experience=experience,
+                                            technology=create_sample_technology(name="A"), position=10)
+        ordered = [et.technology.name for et in experience.experiencetechnology_set.all()]
+        self.assertEqual(ordered, ['A', 'Z'])
 
 
 class WorkItemModelTest(TestCase):

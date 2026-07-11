@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 
 
@@ -19,6 +20,11 @@ class File(models.Model):
 
 class Technology(models.Model):
     name = models.CharField(max_length=255)
+    color = models.CharField(
+        max_length=7, blank=True, default='',
+        validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
+        help_text='Teinte du tag au format #RRGGBB. Vide = style par défaut.',
+    )
 
     def __str__(self):
         return self.name
@@ -31,10 +37,59 @@ class Project(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     image = models.ForeignKey(File, on_delete=models.CASCADE, blank=True, null=True)
-    technologies = models.ManyToManyField(Technology, blank=True)
+    technologies = models.ManyToManyField(Technology, blank=True, through='ProjectTechnology')
 
     def __str__(self):
         return self.title
+
+
+class ProjectTechnology(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    technology = models.ForeignKey(Technology, on_delete=models.CASCADE)
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['position']
+        constraints = [
+            models.UniqueConstraint(fields=['project', 'technology'], name='unique_project_technology'),
+        ]
+
+    def __str__(self):
+        return f"{self.project.title} — {self.technology.name} (#{self.position})"
+
+
+class ProjectLink(models.Model):
+    class Kind(models.TextChoices):
+        GITHUB = 'github', 'GitHub'
+        WEBSITE = 'website', 'Website'
+        APPSTORE = 'appstore', 'App Store'
+        PLAYSTORE = 'playstore', 'Play Store'
+        DOCS = 'docs', 'Documentation'
+        OTHER = 'other', 'Other'
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='links')
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    url = models.URLField()
+    label = models.CharField(
+        max_length=255, blank=True, default='',
+        help_text='Texte affiché ; vide = libellé par défaut du kind.',
+    )
+    icon = models.ForeignKey(
+        File, on_delete=models.SET_NULL, blank=True, null=True, related_name='+',
+        help_text='Fichier icône (SVG ou PNG) ; vide = icône par défaut du kind.',
+    )
+    color = models.CharField(
+        max_length=7, blank=True, default='',
+        validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
+        help_text='Teinte du lien au format #RRGGBB (texte, bordure, icône SVG). Vide = style par défaut.',
+    )
+    index = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['index']
+
+    def __str__(self):
+        return f"{self.get_kind_display()} ({self.project.title})"
 
 
 class Experience(models.Model):
@@ -47,7 +102,7 @@ class Experience(models.Model):
     url = models.URLField(blank=True, null=True)
     urlShort = models.URLField(blank=True, null=True)
     description = models.TextField()
-    technologies = models.ManyToManyField(Technology, blank=True)
+    technologies = models.ManyToManyField(Technology, blank=True, through='ExperienceTechnology')
 
     def clean(self):
         if self.urlShort and not self.url:
@@ -55,6 +110,21 @@ class Experience(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.organisation})"
+
+
+class ExperienceTechnology(models.Model):
+    experience = models.ForeignKey(Experience, on_delete=models.CASCADE)
+    technology = models.ForeignKey(Technology, on_delete=models.CASCADE)
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['position']
+        constraints = [
+            models.UniqueConstraint(fields=['experience', 'technology'], name='unique_experience_technology'),
+        ]
+
+    def __str__(self):
+        return f"{self.experience.title} — {self.technology.name} (#{self.position})"
 
 
 class WorkItem(models.Model):
@@ -155,6 +225,11 @@ class Social(models.Model):
     pseudo = models.CharField(max_length=255, blank=True)
     url = models.URLField()
     image = models.ForeignKey(File, on_delete=models.CASCADE)
+    color = models.CharField(
+        max_length=7, blank=True, default='',
+        validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
+        help_text='Teinte de l\'icône au format #RRGGBB. Vide = couleur du thème.',
+    )
 
     def __str__(self):
         return f"{self.name} ({self.idUser.name})"

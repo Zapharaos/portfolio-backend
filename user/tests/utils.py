@@ -1,4 +1,7 @@
-from user.models import File, Technology, Project, Experience, WorkItem, Work, Hero, About, Footer, User, Social
+from user.models import (
+    File, Technology, Project, ProjectTechnology, ProjectLink,
+    Experience, ExperienceTechnology, WorkItem, Work, Hero, About, Footer, User, Social
+)
 
 
 def create_sample_file(name="Name", creditsUrl="https://credits.com"):
@@ -21,6 +24,24 @@ def create_sample_project(title="Title"):
     return project
 
 
+def create_sample_project_technology(project=None, technology=None, position=0):
+    if project is None:
+        project = create_sample_project()
+    if technology is None:
+        technology = create_sample_technology()
+    return ProjectTechnology.objects.create(
+        project=project, technology=technology, position=position
+    )
+
+
+def create_sample_project_link(project=None, kind='website', url="https://link.com", label="", icon=None, index=0):
+    if project is None:
+        project = create_sample_project()
+    return ProjectLink.objects.create(
+        project=project, kind=kind, url=url, label=label, icon=icon, index=index
+    )
+
+
 def create_sample_experience(title="Title", url="https://experience.com"):
     experience = Experience.objects.create(
         index=1, hidden=False, title=title, organisation="Some Organization", period="2020-2022",
@@ -28,6 +49,16 @@ def create_sample_experience(title="Title", url="https://experience.com"):
     )
     experience.technologies.set([create_sample_technology()])
     return experience
+
+
+def create_sample_experience_technology(experience=None, technology=None, position=0):
+    if experience is None:
+        experience = create_sample_experience()
+    if technology is None:
+        technology = create_sample_technology()
+    return ExperienceTechnology.objects.create(
+        experience=experience, technology=technology, position=position
+    )
 
 
 def create_sample_work_item(title="Title", showProjects=True, showExperiences=False):
