@@ -148,6 +148,22 @@ class UserModelTest(TestCase):
         create_sample_user()
         self.assertEqual(User.objects.count(), 1)
 
+    def test_valid_timezone_passes_validation(self):
+        user = create_sample_user()
+        user.timezone = 'Europe/Paris'
+        user.full_clean()
+
+    def test_invalid_timezone_fails_validation(self):
+        user = create_sample_user()
+        user.timezone = 'Middle/Earth'
+        with self.assertRaises(ValidationError):
+            user.full_clean()
+
+    def test_empty_timezone_is_allowed(self):
+        user = create_sample_user()
+        user.full_clean()
+        self.assertEqual(user.timezone, '')
+
 
 class SocialModelTest(TestCase):
     def test_create_social(self):

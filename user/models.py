@@ -1,6 +1,14 @@
+from zoneinfo import available_timezones
+
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
+
+
+def validate_timezone(value):
+    """Ensure the value is a valid IANA timezone name (e.g. 'Europe/Paris')."""
+    if value and value not in available_timezones():
+        raise ValidationError('%(value)s is not a valid IANA timezone.', params={'value': value})
 
 
 class File(models.Model):
@@ -215,6 +223,11 @@ class User(models.Model):
     email = models.EmailField(unique=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     locale = models.CharField(max_length=255, blank=True, null=True)
+    timezone = models.CharField(
+        max_length=64, blank=True, default='',
+        validators=[validate_timezone],
+        help_text="Timezone IANA (ex. 'Europe/Paris') pour l'horloge du footer ; vide = heure locale du visiteur.",
+    )
     logo = models.ForeignKey(File, on_delete=models.CASCADE, related_name='logo')
     resume = models.ForeignKey(File, on_delete=models.CASCADE, related_name='resume', blank=True, null=True)
     theme = models.ForeignKey(

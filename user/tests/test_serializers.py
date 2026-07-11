@@ -217,7 +217,7 @@ class UserSerializerTests(TestCase):
         serializer = UserSerializer(create_sample_user())  # Use instance for existing data
         # Check for presence of all expected fields
         self.assertEqual(set(serializer.fields.keys()), {
-            'name', 'email', 'location', 'locale', 'logo', 'resume',
+            'name', 'email', 'location', 'locale', 'timezone', 'logo', 'resume',
             'socials', 'theme', 'hero', 'about', 'work', 'footer',
         })
 
