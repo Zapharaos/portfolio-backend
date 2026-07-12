@@ -34,7 +34,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         # Health lives on its own endpoint (ProjectHealthSerializer) so this
         # content payload stays side-effect-free and cacheable. `id` is the join
         # key the frontend uses to merge health back in.
-        fields = ['id', 'index', 'hidden', 'url', 'title', 'description', 'category', 'metric', 'isNew',
+        fields = ['id', 'index', 'hidden', 'title', 'description', 'category', 'metric', 'isNew',
                   'image', 'technologies', 'links']
 
     def get_technologies(self, obj):

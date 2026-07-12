@@ -16,7 +16,7 @@ PROBE = 'user.health.probe'
 
 def make_project(title="P", health_url="https://svc.example/health"):
     project = Project.objects.create(
-        index=1, hidden=False, url="https://project.com", title=title,
+        index=1, hidden=False, title=title,
         description="desc", image=create_sample_file(),
     )
     if health_url:

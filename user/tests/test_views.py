@@ -11,7 +11,7 @@ from user.tests.utils import create_sample_user, create_sample_file
 
 def make_project(title, index, hidden=False, health_url=""):
     project = Project.objects.create(
-        index=index, hidden=hidden, url="https://project.com", title=title,
+        index=index, hidden=hidden, title=title,
         description="desc", image=create_sample_file(),
     )
     if health_url:

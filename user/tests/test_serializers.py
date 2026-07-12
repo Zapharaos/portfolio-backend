@@ -43,7 +43,7 @@ class ProjectSerializerTests(TestCase):
         serializer = ProjectSerializer(create_sample_project())
         # Check for presence of all expected fields
         self.assertEqual(set(serializer.fields.keys()), {
-            'id', 'index', 'hidden', 'url', 'title',
+            'id', 'index', 'hidden', 'title',
             'description', 'category', 'metric', 'isNew',
             'image', 'technologies', 'links',
         })
@@ -67,7 +67,7 @@ class ProjectHealthSerializerTests(TestCase):
 
     def test_project_technologies_ordered_by_position(self):
         project = Project.objects.create(
-            index=1, hidden=False, url="https://project.com", title="Ordered",
+            index=1, hidden=False, title="Ordered",
             description="desc", image=create_sample_file()
         )
         tech_a = create_sample_technology(name="A")

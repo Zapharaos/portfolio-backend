@@ -41,7 +41,6 @@ class Technology(models.Model):
 class Project(models.Model):
     index = models.IntegerField()
     hidden = models.BooleanField(default=False)
-    url = models.URLField(blank=True, null=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
     category = models.CharField(

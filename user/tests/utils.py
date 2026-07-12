@@ -17,7 +17,7 @@ def create_sample_technology(name="Name"):
 
 def create_sample_project(title="Title"):
     project = Project.objects.create(
-        index=1, hidden=False, url="https://project.com", title=title,
+        index=1, hidden=False, title=title,
         description="A short description", image=create_sample_file()
     )
     project.technologies.set([create_sample_technology()])
