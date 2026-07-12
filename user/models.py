@@ -31,7 +31,7 @@ class Technology(models.Model):
     color = models.CharField(
         max_length=7, blank=True, default='',
         validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
-        help_text='Teinte du tag au format #RRGGBB. Vide = style par défaut.',
+        help_text='Tag hue as #RRGGBB. Empty = default style.',
     )
 
     def __str__(self):
@@ -39,37 +39,49 @@ class Technology(models.Model):
 
 
 class Project(models.Model):
+    class ImageFit(models.TextChoices):
+        COVER = 'cover', 'Cover (fill, may crop)'
+        CONTAIN = 'contain', 'Contain (whole image, padded)'
+
     index = models.IntegerField()
     hidden = models.BooleanField(default=False)
     title = models.CharField(max_length=255)
     description = models.TextField()
     category = models.CharField(
         max_length=50, blank=True, default='',
-        help_text='Badge court affiché sur la carte (ex. "Secondaire", "Pro"). Vide = pas de badge.',
+        help_text='Short badge shown on the card (e.g. "Side project", "Pro"). Empty = no badge.',
     )
     metric = models.CharField(
         max_length=100, blank=True, default='',
-        help_text='Métrique courte affichée sous la description (ex. "~6k € ARR", "10k users").',
+        help_text='Short metric shown under the description (e.g. "~6k € ARR", "10k users").',
     )
-    isNew = models.BooleanField(default=False, help_text='Affiche un ruban "Nouveau" sur la carte.')
+    isNew = models.BooleanField(default=False, help_text='Show a "New" badge on the card.')
+    inProgress = models.BooleanField(
+        default=False,
+        help_text='Show a "Work in progress" badge on the card.',
+    )
     iconFramed = models.BooleanField(
         default=True,
-        help_text='Encadre l\'icône (tuile + bordure). Décocher pour une icône sans cadre.',
+        help_text='Frame the icon (tile + border). Uncheck for a frameless icon.',
+    )
+    imageFit = models.CharField(
+        max_length=10, choices=ImageFit.choices, default=ImageFit.COVER,
+        help_text='How the image fills the icon frame (cover = fill/crop, contain = whole image).',
     )
     image = models.ForeignKey(File, on_delete=models.CASCADE, blank=True, null=True)
     technologies = models.ManyToManyField(Technology, blank=True, through='ProjectTechnology')
     healthUrl = models.URLField(
         blank=True, null=True,
-        help_text='Endpoint de santé à vérifier périodiquement. Vide = pas de check.',
+        help_text='Health endpoint to probe periodically. Empty = no check.',
     )
     healthUp = models.BooleanField(
         null=True, default=None, editable=False,
-        help_text='Dernier état connu ; null = jamais vérifié.',
+        help_text='Last known state; null = never checked.',
     )
     healthCheckedAt = models.DateTimeField(null=True, default=None, editable=False)
     healthFailures = models.PositiveSmallIntegerField(
         default=0, editable=False,
-        help_text='Échecs consécutifs (anti-faux-négatifs).',
+        help_text='Consecutive failures (guards against false negatives).',
     )
 
     def save(self, *args, **kwargs):
@@ -108,21 +120,29 @@ class ProjectLink(models.Model):
         DOCS = 'docs', 'Documentation'
         OTHER = 'other', 'Other'
 
+    class IconPosition(models.TextChoices):
+        BEFORE = 'before', 'Before label'
+        AFTER = 'after', 'After label'
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='links')
     kind = models.CharField(max_length=20, choices=Kind.choices)
     url = models.URLField()
     label = models.CharField(
         max_length=255, blank=True, default='',
-        help_text='Texte affiché ; vide = libellé par défaut du kind.',
+        help_text='Displayed text; empty = "View".',
     )
     icon = models.ForeignKey(
         File, on_delete=models.SET_NULL, blank=True, null=True, related_name='+',
-        help_text='Fichier icône (SVG ou PNG) ; vide = icône par défaut du kind.',
+        help_text='Icon file (SVG or PNG); empty = no icon.',
+    )
+    iconPosition = models.CharField(
+        max_length=10, choices=IconPosition.choices, default=IconPosition.BEFORE,
+        help_text='Icon position relative to the label.',
     )
     color = models.CharField(
         max_length=7, blank=True, default='',
         validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
-        help_text='Teinte du lien au format #RRGGBB (texte, bordure, icône SVG). Vide = style par défaut.',
+        help_text='Link hue as #RRGGBB (text, border, SVG icon). Empty = default style.',
     )
     index = models.PositiveIntegerField(default=0)
 
@@ -234,17 +254,17 @@ class Theme(models.Model):
     background = models.CharField(
         max_length=7,
         validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
-        help_text='Token --color-background au format #RRGGBB.',
+        help_text='--color-background token as #RRGGBB.',
     )
     text = models.CharField(
         max_length=7,
         validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
-        help_text='Token --color-text au format #RRGGBB.',
+        help_text='--color-text token as #RRGGBB.',
     )
     primary = models.CharField(
         max_length=7,
         validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
-        help_text='Token --color-primary au format #RRGGBB.',
+        help_text='--color-primary token as #RRGGBB.',
     )
 
     def __str__(self):
@@ -259,13 +279,13 @@ class User(models.Model):
     timezone = models.CharField(
         max_length=64, blank=True, default='',
         validators=[validate_timezone],
-        help_text="Timezone IANA (ex. 'Europe/Paris') pour l'horloge du footer ; vide = heure locale du visiteur.",
+        help_text="IANA timezone (e.g. 'Europe/Paris') for the footer clock; empty = visitor's local time.",
     )
     logo = models.ForeignKey(File, on_delete=models.CASCADE, related_name='logo')
     resume = models.ForeignKey(File, on_delete=models.CASCADE, related_name='resume', blank=True, null=True)
     theme = models.ForeignKey(
         Theme, on_delete=models.SET_NULL, blank=True, null=True,
-        help_text='Thème actif ; vide = tokens par défaut du frontend.',
+        help_text='Active theme; empty = frontend default tokens.',
     )
     hero = models.OneToOneField(
         Hero, on_delete=models.CASCADE
@@ -297,11 +317,6 @@ class Social(models.Model):
     pseudo = models.CharField(max_length=255, blank=True)
     url = models.URLField()
     image = models.ForeignKey(File, on_delete=models.CASCADE)
-    color = models.CharField(
-        max_length=7, blank=True, default='',
-        validators=[RegexValidator(r'^#[0-9a-fA-F]{6}$')],
-        help_text='Teinte de l\'icône au format #RRGGBB. Vide = couleur du thème.',
-    )
 
     def __str__(self):
         return f"{self.name} ({self.idUser.name})"

@@ -1,4 +1,5 @@
 from django.test import TestCase
+from rest_framework.test import APIRequestFactory
 from user.models import Project, Experience, WorkItem, Social
 from user.serializers import (
     SocialSerializer,
@@ -45,7 +46,7 @@ class ProjectSerializerTests(TestCase):
         self.assertEqual(set(serializer.fields.keys()), {
             'id', 'index', 'hidden', 'title',
             'description', 'category', 'metric', 'isNew',
-            'iconFramed', 'image', 'technologies', 'links',
+            'inProgress', 'iconFramed', 'imageFit', 'image', 'technologies', 'links',
         })
 
     def test_project_serializer_does_not_expose_health(self):
@@ -87,7 +88,7 @@ class ProjectLinkSerializerTests(TestCase):
     def test_project_link_serializer_fields(self):
         serializer = ProjectLinkSerializer(create_sample_project_link())
         self.assertEqual(set(serializer.fields.keys()), {
-            'kind', 'url', 'label', 'icon', 'color', 'index',
+            'kind', 'url', 'label', 'icon', 'iconPosition', 'color', 'index',
         })
 
     def test_project_link_color_defaults_empty(self):
@@ -182,6 +183,19 @@ class HiddenFilteringTests(TestCase):
         data = UserSerializer(user).data
         self.assertEqual([s['name'] for s in data['socials']], ['Visible'])
 
+    def test_nested_media_urls_are_absolute_with_request_context(self):
+        # Regression: the hidden-filtering SerializerMethodFields must propagate
+        # the request context, else nested FileField URLs come out relative and
+        # break cross-origin (frontend on a different host than the API).
+        user = create_sample_user()
+        Social.objects.create(idUser=user, index=1, hidden=False, name="GitHub",
+                              url="https://gh.com", image=create_sample_file())
+        request = APIRequestFactory().get('/user/')
+
+        data = UserSerializer(user, context={'request': request}).data
+        self.assertTrue(data['logo']['file'].startswith('http'))
+        self.assertTrue(data['socials'][0]['image']['file'].startswith('http'))
+
 
 class WorkItemSerializerTests(TestCase):
 
@@ -246,19 +260,8 @@ class SocialSerializerTests(TestCase):
         serializer = SocialSerializer(create_sample_social())
         # Check for presence of all expected fields
         self.assertEqual(set(serializer.fields.keys()), {
-            'index', 'hidden', 'name', 'pseudo', 'url', 'image', 'color',
+            'index', 'hidden', 'name', 'pseudo', 'url', 'image',
         })
-        self.assertIn('index', serializer.fields.keys())
-        self.assertIn('hidden', serializer.fields.keys())
-        self.assertIn('name', serializer.fields.keys())
-        self.assertIn('pseudo', serializer.fields.keys())
-        self.assertIn('url', serializer.fields.keys())
-        self.assertIn('image', serializer.fields.keys())
-        self.assertIn('color', serializer.fields.keys())
-
-    def test_social_serializer_color_defaults_empty(self):
-        serializer = SocialSerializer(create_sample_social())
-        self.assertEqual(serializer.data['color'], '')
 
 
 class ThemeSerializerTests(TestCase):

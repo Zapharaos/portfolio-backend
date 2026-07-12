@@ -21,7 +21,7 @@ class ProjectLinkSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectLink
-        fields = ['kind', 'url', 'label', 'icon', 'color', 'index']
+        fields = ['kind', 'url', 'label', 'icon', 'iconPosition', 'color', 'index']
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -35,13 +35,13 @@ class ProjectSerializer(serializers.ModelSerializer):
         # content payload stays side-effect-free and cacheable. `id` is the join
         # key the frontend uses to merge health back in.
         fields = ['id', 'index', 'hidden', 'title', 'description', 'category', 'metric', 'isNew',
-                  'iconFramed', 'image', 'technologies', 'links']
+                  'inProgress', 'iconFramed', 'imageFit', 'image', 'technologies', 'links']
 
     def get_technologies(self, obj):
         # The through model's Meta.ordering does not apply to M2M traversal,
         # so order explicitly by ProjectTechnology.position.
         techs = obj.technologies.order_by('projecttechnology__position')
-        return TechnologySerializer(techs, many=True).data
+        return TechnologySerializer(techs, many=True, context=self.context).data
 
 
 class ProjectHealthSerializer(serializers.ModelSerializer):
@@ -62,7 +62,7 @@ class ExperienceSerializer(serializers.ModelSerializer):
         # The through model's Meta.ordering does not apply to M2M traversal,
         # so order explicitly by ExperienceTechnology.position.
         techs = obj.technologies.order_by('experiencetechnology__position')
-        return TechnologySerializer(techs, many=True).data
+        return TechnologySerializer(techs, many=True, context=self.context).data
 
 
 class WorkItemSerializer(serializers.ModelSerializer):
@@ -75,11 +75,11 @@ class WorkItemSerializer(serializers.ModelSerializer):
 
     def get_projects(self, obj):
         qs = obj.projects.filter(hidden=False).order_by('index')
-        return ProjectSerializer(qs, many=True).data
+        return ProjectSerializer(qs, many=True, context=self.context).data
 
     def get_experiences(self, obj):
         qs = obj.experiences.filter(hidden=False).order_by('index')
-        return ExperienceSerializer(qs, many=True).data
+        return ExperienceSerializer(qs, many=True, context=self.context).data
 
 
 class WorkSerializer(serializers.ModelSerializer):
@@ -91,7 +91,7 @@ class WorkSerializer(serializers.ModelSerializer):
 
     def get_items(self, obj):
         qs = obj.items.filter(hidden=False).order_by('index')
-        return WorkItemSerializer(qs, many=True).data
+        return WorkItemSerializer(qs, many=True, context=self.context).data
 
 
 class HeroSerializer(serializers.ModelSerializer):
@@ -122,7 +122,7 @@ class SocialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Social
-        fields = ['index', 'hidden', 'name', 'pseudo', 'url', 'image', 'color']
+        fields = ['index', 'hidden', 'name', 'pseudo', 'url', 'image']
 
 
 class ThemeSerializer(serializers.ModelSerializer):
@@ -148,4 +148,4 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_socials(self, obj):
         qs = obj.social_set.filter(hidden=False).order_by('index')
-        return SocialSerializer(qs, many=True).data
+        return SocialSerializer(qs, many=True, context=self.context).data

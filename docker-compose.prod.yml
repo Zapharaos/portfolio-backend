@@ -4,7 +4,9 @@ services:
     restart: unless-stopped
     container_name: portfolio-backend
     build: .
-    command: gunicorn portfolio-backend.wsgi:application --bind 0.0.0.0:${DJANGO_PORT}
+    # Several workers so the server can serve its own health probe (self-monitoring
+    # deadlocks a single-worker setup) and handle concurrent requests.
+    command: gunicorn portfolio-backend.wsgi:application --bind 0.0.0.0:${DJANGO_PORT} --workers 3
     env_file:
       - .env
     ports:

@@ -41,7 +41,9 @@ class ProjectLinkInline(admin.TabularInline):
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     inlines = [ProjectTechnologyInline, ProjectLinkInline]
-    list_display = ['title', 'healthUp', 'healthCheckedAt', 'healthFailures']
+    list_display = ['title', 'index', 'hidden', 'healthUp', 'healthCheckedAt', 'healthFailures']
+    # Editable straight from the list for quick reordering / (un)hiding.
+    list_editable = ['index', 'hidden']
     readonly_fields = ['healthUp', 'healthCheckedAt', 'healthFailures']
 
 

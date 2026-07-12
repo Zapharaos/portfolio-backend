@@ -4,7 +4,7 @@ from user.health import monitored_projects, refresh_project
 
 
 class Command(BaseCommand):
-    help = 'Vérifie les healthUrl des projets et met à jour leur état (run manuel/optionnel).'
+    help = 'Probe the projects healthUrl and update their state (manual/optional run).'
 
     def handle(self, *args, **options):
         for project in monitored_projects():
