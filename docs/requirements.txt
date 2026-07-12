@@ -1,0 +1,3 @@
+# Docs-only dependencies (not needed to run the app).
+# Local preview:  pip install -r docs/requirements.txt && mkdocs serve
+mkdocs-material==9.5.30
