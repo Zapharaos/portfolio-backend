@@ -45,7 +45,7 @@ class ProjectSerializerTests(TestCase):
         self.assertEqual(set(serializer.fields.keys()), {
             'id', 'index', 'hidden', 'title',
             'description', 'category', 'metric', 'isNew',
-            'image', 'technologies', 'links',
+            'iconFramed', 'image', 'technologies', 'links',
         })
 
     def test_project_serializer_does_not_expose_health(self):

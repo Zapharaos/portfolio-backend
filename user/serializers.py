@@ -35,7 +35,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         # content payload stays side-effect-free and cacheable. `id` is the join
         # key the frontend uses to merge health back in.
         fields = ['id', 'index', 'hidden', 'title', 'description', 'category', 'metric', 'isNew',
-                  'image', 'technologies', 'links']
+                  'iconFramed', 'image', 'technologies', 'links']
 
     def get_technologies(self, obj):
         # The through model's Meta.ordering does not apply to M2M traversal,

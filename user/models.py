@@ -52,6 +52,10 @@ class Project(models.Model):
         help_text='Métrique courte affichée sous la description (ex. "~6k € ARR", "10k users").',
     )
     isNew = models.BooleanField(default=False, help_text='Affiche un ruban "Nouveau" sur la carte.')
+    iconFramed = models.BooleanField(
+        default=True,
+        help_text='Encadre l\'icône (tuile + bordure). Décocher pour une icône sans cadre.',
+    )
     image = models.ForeignKey(File, on_delete=models.CASCADE, blank=True, null=True)
     technologies = models.ManyToManyField(Technology, blank=True, through='ProjectTechnology')
     healthUrl = models.URLField(
