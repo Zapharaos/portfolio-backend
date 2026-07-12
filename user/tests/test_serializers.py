@@ -65,7 +65,6 @@ class ProjectHealthSerializerTests(TestCase):
             'id', 'healthUp', 'healthCheckedAt',
         })
 
-
     def test_project_technologies_ordered_by_position(self):
         project = Project.objects.create(
             index=1, hidden=False, title="Ordered",

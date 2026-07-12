@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from user.models import User, Theme
+from user.models import User
 from user.tests.utils import create_sample_user, create_sample_file, create_sample_technology, create_sample_project, \
     create_sample_project_link, create_sample_experience, create_sample_experience_technology, \
     create_sample_work_item, create_sample_work, create_sample_theme, \
