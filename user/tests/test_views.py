@@ -4,7 +4,8 @@ from rest_framework.throttling import ScopedRateThrottle
 from django.test import TestCase, RequestFactory, override_settings
 from django.urls import reverse
 from user.models import User, Project
-from user.views import SingletonUserView, ProjectListView, ProjectHealthView
+from user import views as user_views
+from user.views import SingletonUserView, ProjectListView, ProjectHealthView, HealthView
 from user.tests.utils import create_sample_user, create_sample_file
 
 
@@ -17,6 +18,30 @@ def make_project(title, index, hidden=False, health_url=""):
         project.healthUrl = health_url
         project.save()
     return project
+
+
+class HealthViewTests(TestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        # Force a recompute (the verdict is cached across requests).
+        user_views._health_cache['ok'] = None
+
+    def test_healthy_returns_200_ok(self):
+        response = HealthView.as_view()(self.factory.get(reverse('health')))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['status'], 'ok')
+        self.assertEqual(response.data['components']['database']['status'], 'ok')
+        self.assertIn('uptimeSeconds', response.data)
+        self.assertIn('timestamp', response.data)
+        self.assertEqual(response['Cache-Control'], 'no-store')
+
+    def test_degraded_returns_503_when_database_down(self):
+        with patch('user.views._check_database', return_value=False):
+            response = HealthView.as_view()(self.factory.get(reverse('health')))
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.data['status'], 'degraded')
+        self.assertEqual(response.data['components']['database']['status'], 'down')
 
 
 class SingletonUserViewTests(TestCase):
