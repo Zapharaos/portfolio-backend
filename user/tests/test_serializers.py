@@ -1,5 +1,5 @@
 from django.test import TestCase
-from user.models import Project, Experience
+from user.models import Project, Experience, WorkItem, Social
 from user.serializers import (
     SocialSerializer,
     UserSerializer, FileSerializer, TechnologySerializer, ProjectSerializer, ProjectHealthSerializer,
@@ -139,6 +139,48 @@ class ExperienceSerializerTests(TestCase):
 
         data = ExperienceSerializer(experience).data
         self.assertEqual([t['name'] for t in data['technologies']], ['A', 'B', 'C'])
+
+
+class HiddenFilteringTests(TestCase):
+    """Hidden items must not leak through the public user endpoint."""
+
+    def test_work_item_excludes_hidden_projects_and_experiences(self):
+        item = create_sample_work_item()
+        item.projects.set([
+            create_sample_project(title="Visible"),
+            create_sample_project(title="Secret"),
+        ])
+        item.experiences.set([
+            create_sample_experience(title="VisibleXp"),
+            create_sample_experience(title="SecretXp"),
+        ])
+        Project.objects.filter(title="Secret").update(hidden=True)
+        Experience.objects.filter(title="SecretXp").update(hidden=True)
+
+        data = WorkItemSerializer(item).data
+        self.assertEqual([p['title'] for p in data['projects']], ['Visible'])
+        self.assertEqual([e['title'] for e in data['experiences']], ['VisibleXp'])
+
+    def test_work_excludes_hidden_items(self):
+        work = create_sample_work()
+        work.items.set([
+            create_sample_work_item(title="Shown"),
+            create_sample_work_item(title="Hidden"),
+        ])
+        WorkItem.objects.filter(title="Hidden").update(hidden=True)
+
+        data = WorkSerializer(work).data
+        self.assertEqual([i['title'] for i in data['items']], ['Shown'])
+
+    def test_user_excludes_hidden_socials(self):
+        user = create_sample_user()
+        Social.objects.create(idUser=user, index=1, hidden=False, name="Visible",
+                              url="https://a.com", image=create_sample_file())
+        Social.objects.create(idUser=user, index=2, hidden=True, name="Secret",
+                              url="https://b.com", image=create_sample_file())
+
+        data = UserSerializer(user).data
+        self.assertEqual([s['name'] for s in data['socials']], ['Visible'])
 
 
 class WorkItemSerializerTests(TestCase):

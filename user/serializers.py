@@ -66,20 +66,32 @@ class ExperienceSerializer(serializers.ModelSerializer):
 
 
 class WorkItemSerializer(serializers.ModelSerializer):
-    projects = ProjectSerializer(many=True)
-    experiences = ExperienceSerializer(many=True)
+    projects = serializers.SerializerMethodField()
+    experiences = serializers.SerializerMethodField()
 
     class Meta:
         model = WorkItem
         fields = ['index', 'hidden', 'title', 'projects', 'experiences', 'showProjects', 'showExperiences']
 
+    def get_projects(self, obj):
+        qs = obj.projects.filter(hidden=False).order_by('index')
+        return ProjectSerializer(qs, many=True).data
+
+    def get_experiences(self, obj):
+        qs = obj.experiences.filter(hidden=False).order_by('index')
+        return ExperienceSerializer(qs, many=True).data
+
 
 class WorkSerializer(serializers.ModelSerializer):
-    items = WorkItemSerializer(many=True)
+    items = serializers.SerializerMethodField()
 
     class Meta:
         model = Work
         fields = ['items']
+
+    def get_items(self, obj):
+        qs = obj.items.filter(hidden=False).order_by('index')
+        return WorkItemSerializer(qs, many=True).data
 
 
 class HeroSerializer(serializers.ModelSerializer):
@@ -122,7 +134,7 @@ class ThemeSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     logo = FileSerializer()
     resume = FileSerializer()
-    socials = SocialSerializer(many=True, source='social_set')
+    socials = serializers.SerializerMethodField()
     theme = ThemeSerializer()
     hero = HeroSerializer()
     about = AboutSerializer()
@@ -133,3 +145,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['name', 'email', 'location', 'locale', 'timezone', 'logo', 'resume', 'socials', 'theme',
                   'hero', 'about', 'work', 'footer']
+
+    def get_socials(self, obj):
+        qs = obj.social_set.filter(hidden=False).order_by('index')
+        return SocialSerializer(qs, many=True).data
