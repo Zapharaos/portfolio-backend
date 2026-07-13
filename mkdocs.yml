@@ -50,6 +50,7 @@ nav:
   - Getting started: getting-started.md
   - API reference: api.md
   - Data model: models.md
+  - Media & files: media.md
   - Health checks: health-checks.md
   - Configuration: configuration.md
   - Deployment: deployment.md

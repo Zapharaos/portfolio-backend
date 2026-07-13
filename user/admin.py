@@ -1,9 +1,50 @@
+import os
+
+from django import forms
 from django.contrib import admin
+from django.core.files.uploadedfile import UploadedFile
+from django.db.models import Q
 from django.utils.html import format_html
 from .models import (
     File, Technology, Project, ProjectTechnology, ProjectLink,
     Experience, ExperienceTechnology, WorkItem, Work, Hero, About, Footer, Theme, User, Social
 )
+
+
+class FileAdminForm(forms.ModelForm):
+    class Meta:
+        model = File
+        fields = '__all__'
+
+    def clean_file(self):
+        """Warn (block) when the uploaded file name is already used by another
+        File record — uploading it would overwrite that file (OverwriteStorage)."""
+        uploaded = self.cleaned_data.get('file')
+        # Only check a freshly uploaded file, not an unchanged existing one.
+        if not isinstance(uploaded, UploadedFile):
+            return uploaded
+
+        name = os.path.basename(uploaded.name)
+        clash = (
+            File.objects
+            .exclude(pk=self.instance.pk)
+            .filter(Q(file=name) | Q(file__endswith='/' + name))
+            .first()
+        )
+        if clash:
+            raise forms.ValidationError(
+                f'A file named "{name}" is already used by "{clash.name}" (id {clash.pk}). '
+                f'Uploading it would overwrite that file. Rename your file, or edit that '
+                f'record instead.'
+            )
+        return uploaded
+
+
+@admin.register(File)
+class FileAdmin(admin.ModelAdmin):
+    form = FileAdminForm
+    list_display = ['name', 'file']
+    search_fields = ['name', 'file']
 
 
 @admin.register(Technology)
@@ -44,6 +85,9 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ['title', 'index', 'hidden', 'healthUp', 'healthCheckedAt', 'healthFailures']
     # Editable straight from the list for quick reordering / (un)hiding.
     list_editable = ['index', 'hidden']
+    # Sorted by index by default; click the "index" column header to toggle.
+    ordering = ['index']
+    list_filter = ['hidden']
     readonly_fields = ['healthUp', 'healthCheckedAt', 'healthFailures']
 
 
@@ -57,7 +101,6 @@ class ExperienceAdmin(admin.ModelAdmin):
     inlines = [ExperienceTechnologyInline]
 
 
-admin.site.register(File)
 admin.site.register(WorkItem)
 admin.site.register(Work)
 admin.site.register(Hero)

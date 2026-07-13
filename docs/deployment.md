@@ -38,6 +38,63 @@ The container mounts the project directory and joins the external
     media is proxied through Django (which sets the host and CORS headers). If
     you serve `/media` directly from Nginx, add CORS headers there.
 
+## Persistence & media
+
+`db.sqlite3` and `media/` live on the host via the compose bind‑mount
+(`.:/usr/src/app/`) — **without a volume/mount they are ephemeral** and reset on
+every rebuild. `.dockerignore` also keeps them out of the image, so old uploads
+never resurrect on redeploy. See [Media & files](media.md) for storage, the
+`clean_orphan_media` command and the CDN‑cache caveat.
+
+Confirm the mount is active:
+
+```bash
+docker inspect portfolio-backend --format '{{json .Mounts}}'
+```
+
+## Backups
+
+`db.sqlite3` holds **all** the site's content, so back it up (and `media/`).
+[`scripts/backup.sh`](https://github.com/Zapharaos/portfolio-backend/blob/main/scripts/backup.sh)
+writes a single timestamped `.tar.gz` (a consistent SQLite snapshot via
+`sqlite3 .backup` + the media folder) and prunes old ones.
+
+```bash
+chmod +x scripts/backup.sh          # once
+
+# Run it (paths overridable via APP_DIR / BACKUP_DIR / RETENTION_DAYS)
+./scripts/backup.sh
+```
+
+Schedule it with cron (daily at 03:00):
+
+```cron
+0 3 * * * /home/dev/matthieu/portfolio/back/scripts/backup.sh >> /var/log/portfolio-backup.log 2>&1
+```
+
+Restore:
+
+```bash
+tar -xzf portfolio-YYYYMMDD-HHMMSS.tar.gz -C /home/dev/matthieu/portfolio/back
+docker compose -f docker-compose.prod.yml restart portfolio-backend
+```
+
+!!! tip
+    Store backups on a different disk or off‑site — a backup next to the data it
+    protects doesn't survive a disk loss.
+
+## Security hardening
+
+Django sits behind Nginx (TLS). `settings.py` sets:
+
+- `SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')` so Django knows
+  requests are HTTPS.
+- `SESSION_COOKIE_SECURE` / `CSRF_COOKIE_SECURE` = `True` when `DEBUG` is off, so
+  the admin's session/CSRF cookies are only sent over HTTPS.
+
+Also make sure production env has `DJANGO_DEBUG_MODE=False` (or unset), a strong
+`DJANGO_SECRET_KEY`, and correct `DJANGO_ALLOWED_HOSTS`.
+
 ## Migrations
 
 Applied automatically by `entrypoint.sh` on container start. To run manually:

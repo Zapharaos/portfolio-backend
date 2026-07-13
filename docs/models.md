@@ -160,10 +160,12 @@ Social links shown in the footer.
 
 ## File
 
-Uploaded files (images, resume…). Referenced by many records.
+Uploaded files (images, resume…). Referenced by many records. Storage,
+overwrite behaviour, deletion rules and cleanup are covered in
+[Media & files](media.md).
 
 | Field | Description |
 |---|---|
 | Name | Display name / alt text. |
-| File | The uploaded file. Served under `/media/`; the API returns an **absolute** URL. |
+| File | The uploaded file. Served under `/media/`; the API returns an **absolute** URL. Same‑name uploads overwrite (stable URLs). |
 | CreditsUrl / CreditsShortUrl | Attribution link (used by hero images). |

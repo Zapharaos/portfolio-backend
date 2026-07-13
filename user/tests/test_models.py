@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
+from django.db.models import ProtectedError
 from user.models import User
 from user.tests.utils import create_sample_user, create_sample_file, create_sample_technology, create_sample_project, \
     create_sample_project_link, create_sample_experience, create_sample_experience_technology, \
@@ -176,6 +177,23 @@ class UserModelTest(TestCase):
         user = create_sample_user()
         user.full_clean()
         self.assertEqual(user.timezone, '')
+
+
+class FileDeletionTests(TestCase):
+    """Deleting a File must never cascade‑delete the content that uses it."""
+
+    def test_deleting_optional_file_nulls_the_reference_and_keeps_user(self):
+        user = create_sample_user()
+        user.resume.delete()  # SET_NULL
+        user.refresh_from_db()
+        self.assertIsNone(user.resume)
+        self.assertTrue(User.objects.filter(pk=user.pk).exists())
+
+    def test_cannot_delete_a_file_used_by_a_required_field(self):
+        user = create_sample_user()
+        with self.assertRaises(ProtectedError):
+            user.logo.delete()  # PROTECT — must unlink first
+        self.assertTrue(User.objects.filter(pk=user.pk).exists())
 
 
 class SocialModelTest(TestCase):

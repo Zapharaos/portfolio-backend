@@ -3,6 +3,10 @@ from zoneinfo import available_timezones
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.signals import post_delete, pre_save
+from django.dispatch import receiver
+
+from .storage import OverwriteStorage
 
 
 def validate_timezone(value):
@@ -13,7 +17,7 @@ def validate_timezone(value):
 
 class File(models.Model):
     name = models.CharField(max_length=255)
-    file = models.FileField()
+    file = models.FileField(storage=OverwriteStorage())
     creditsUrl = models.URLField(blank=True, null=True)
     creditsShortUrl = models.CharField(max_length=255, blank=True, null=True)
 
@@ -24,6 +28,27 @@ class File(models.Model):
 
     def __str__(self):
         return self.name
+
+
+@receiver(post_delete, sender=File)
+def _delete_file_on_record_delete(sender, instance, **kwargs):
+    """Remove the file from storage when its File record is deleted."""
+    if instance.file:
+        instance.file.delete(save=False)
+
+
+@receiver(pre_save, sender=File)
+def _delete_old_file_on_change(sender, instance, **kwargs):
+    """When a File's upload is replaced by a differently-named one, delete the old
+    file so it doesn't become an orphan (same-name uploads are overwritten)."""
+    if not instance.pk:
+        return
+    try:
+        old_file = File.objects.get(pk=instance.pk).file
+    except File.DoesNotExist:
+        return
+    if old_file and old_file.name != instance.file.name:
+        old_file.delete(save=False)
 
 
 class Technology(models.Model):
@@ -68,7 +93,7 @@ class Project(models.Model):
         max_length=10, choices=ImageFit.choices, default=ImageFit.COVER,
         help_text='How the image fills the icon frame (cover = fill/crop, contain = whole image).',
     )
-    image = models.ForeignKey(File, on_delete=models.CASCADE, blank=True, null=True)
+    image = models.ForeignKey(File, on_delete=models.SET_NULL, blank=True, null=True)
     technologies = models.ManyToManyField(Technology, blank=True, through='ProjectTechnology')
     healthUrl = models.URLField(
         blank=True, null=True,
@@ -218,7 +243,7 @@ class Hero(models.Model):
     title = models.CharField(max_length=255)
     tagline = models.TextField()
     callToActionContent = models.CharField(max_length=255)
-    backgroundImage = models.ForeignKey(File, on_delete=models.CASCADE)
+    backgroundImage = models.ForeignKey(File, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.content_type
@@ -226,9 +251,9 @@ class Hero(models.Model):
 
 class About(models.Model):
     content_type = models.CharField(max_length=255, default='about')
-    image = models.ForeignKey(File, on_delete=models.CASCADE, related_name='image')
+    image = models.ForeignKey(File, on_delete=models.PROTECT, related_name='image')
     imageResponsive = models.ForeignKey(
-        File, on_delete=models.CASCADE, related_name='imageResponsive', blank=True, null=True
+        File, on_delete=models.SET_NULL, related_name='imageResponsive', blank=True, null=True
     )
     description = models.TextField()
 
@@ -281,8 +306,8 @@ class User(models.Model):
         validators=[validate_timezone],
         help_text="IANA timezone (e.g. 'Europe/Paris') for the footer clock; empty = visitor's local time.",
     )
-    logo = models.ForeignKey(File, on_delete=models.CASCADE, related_name='logo')
-    resume = models.ForeignKey(File, on_delete=models.CASCADE, related_name='resume', blank=True, null=True)
+    logo = models.ForeignKey(File, on_delete=models.PROTECT, related_name='logo')
+    resume = models.ForeignKey(File, on_delete=models.SET_NULL, related_name='resume', blank=True, null=True)
     theme = models.ForeignKey(
         Theme, on_delete=models.SET_NULL, blank=True, null=True,
         help_text='Active theme; empty = frontend default tokens.',
@@ -316,7 +341,7 @@ class Social(models.Model):
     name = models.CharField(max_length=255)
     pseudo = models.CharField(max_length=255, blank=True)
     url = models.URLField()
-    image = models.ForeignKey(File, on_delete=models.CASCADE)
+    image = models.ForeignKey(File, on_delete=models.PROTECT)
 
     def __str__(self):
         return f"{self.name} ({self.idUser.name})"

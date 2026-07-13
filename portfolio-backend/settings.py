@@ -28,9 +28,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG_MODE', False)
+# Parse as a real boolean: any non-empty string (even "0") is truthy, so the
+# previous `os.environ.get(..., False)` left DEBUG ON whenever the var was set.
+DEBUG = os.environ.get('DJANGO_DEBUG_MODE', 'False').strip().lower() in ('1', 'true', 'yes', 'on')
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(",")
+
+# Security — Django runs behind an Nginx TLS terminator, so trust the forwarded
+# scheme and mark the admin's session/CSRF cookies Secure in production (disabled
+# under DEBUG so local http still works).
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 # Application definition
 

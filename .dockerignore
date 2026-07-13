@@ -1,0 +1,30 @@
+# Version control / tooling
+.git
+.github
+.gitignore
+.gitattributes
+.dockerignore
+.idea
+.vscode
+
+# Python
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+
+# Runtime data — provided by the bind mount / volume, never baked into the image
+db.sqlite3
+media/
+
+# Secrets / local env
+.env
+.env.*
+
+# Docs & build artifacts
+docs/
+site/
+mkdocs.yml
+README.md
+LICENSE
